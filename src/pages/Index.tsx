@@ -2,8 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
-import tradeline247 from '@/assets/app_tradeline247.svg';
-import icon1 from '@/assets/icons/icon-1.svg';
+import tradeline247 from '@/assets/icons/icon-1.svg';
 import icon2 from '@/assets/icons/icon-2.svg';
 import icon3 from '@/assets/icons/icon-3.svg';
 import icon4 from '@/assets/icons/icon-4.svg';
@@ -33,7 +32,7 @@ const Index = () => {
   };
 
   const apps = [
-    { name: 'TradeLine 24/7', icon: tradeline247, alt: 'TradeLine 24/7 app icon' },
+    { name: 'App 10', icon: icon9, alt: 'App 10 icon' },
     { name: 'WhatsApp Hub', icon: icon2, alt: 'WhatsApp Hub app icon' },
     { name: 'Gmail Bridge', icon: icon3, alt: 'Gmail Bridge app icon' },
     { name: 'IONOS Mail', icon: icon4, alt: 'IONOS Mail app icon' },
@@ -42,7 +41,7 @@ const Index = () => {
     { name: 'StrideGuide', icon: strideGuide, alt: 'StrideGuide app icon' },
     { name: 'App 8', icon: icon7, alt: 'App 8 icon' },
     { name: 'App 9', icon: icon8, alt: 'App 9 icon' },
-    { name: 'App 10', icon: icon1, alt: 'App 10 icon' },
+    { name: 'TradeLine 24/7', icon: tradeline247, alt: 'TradeLine 24/7 app icon' },
   ];
 
   return (
