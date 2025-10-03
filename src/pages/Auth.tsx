@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { z } from 'zod';
-import appIcon from '@/assets/app_icon.svg';
+import apexLogo from '@/assets/apex_emblem_logo.svg';
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -121,7 +121,7 @@ const Auth = () => {
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
               <img 
-                src={appIcon} 
+                src={apexLogo} 
                 alt="APEX Business Systems logo" 
                 className="h-16 w-16"
                 aria-hidden="true"

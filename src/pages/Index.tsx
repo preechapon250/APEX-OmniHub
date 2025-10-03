@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, RefreshCw, Trash2 } from 'lucide-react';
-import appIcon from '@/assets/app_icon.svg';
+import apexLogo from '@/assets/apex_emblem_logo.svg';
 import { Header } from '@/components/Header';
 const Index = () => {
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ const Index = () => {
       <section className="flex min-h-screen items-center justify-center px-4 py-20 pt-28">
         <div className="text-center space-y-6 max-w-[920px] w-full">
           <div className="flex justify-center mb-8">
-            
+            <img src={apexLogo} alt="APEX Business Systems logo" className="h-24 md:h-32 w-auto" />
           </div>
           <h1 className="text-6xl md:text-7xl font-bold leading-tight tracking-tight">
             APEX Business Systems, Apps for Life!
