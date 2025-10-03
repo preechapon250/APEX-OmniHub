@@ -3,6 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
 import tradeline247 from '@/assets/app_tradeline247.svg';
+import icon1 from '@/assets/icons/icon-1.svg';
+import icon2 from '@/assets/icons/icon-2.svg';
+import icon3 from '@/assets/icons/icon-3.svg';
+import icon4 from '@/assets/icons/icon-4.svg';
+import icon5 from '@/assets/icons/icon-5.svg';
+import icon6 from '@/assets/icons/icon-6.svg';
+import icon7 from '@/assets/icons/icon-7.svg';
+import icon8 from '@/assets/icons/icon-8.svg';
+import icon9 from '@/assets/icons/icon-9.svg';
+import strideGuide from '@/assets/icons/strideguide.png';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -24,14 +34,15 @@ const Index = () => {
 
   const apps = [
     { name: 'TradeLine 24/7', icon: tradeline247, alt: 'TradeLine 24/7 app icon' },
-    { name: 'WhatsApp Hub', icon: null, alt: 'WhatsApp Hub app icon' },
-    { name: 'Gmail Bridge', icon: null, alt: 'Gmail Bridge app icon' },
-    { name: 'IONOS Mail', icon: null, alt: 'IONOS Mail app icon' },
-    { name: 'Google Dev Console', icon: null, alt: 'Google Dev Console app icon' },
-    { name: 'Apple Dev Connect', icon: null, alt: 'Apple Dev Connect app icon' },
-    { name: 'Coming Soon', icon: null, alt: 'Coming Soon' },
-    { name: 'Coming Soon', icon: null, alt: 'Coming Soon' },
-    { name: 'Coming Soon', icon: null, alt: 'Coming Soon' },
+    { name: 'WhatsApp Hub', icon: icon2, alt: 'WhatsApp Hub app icon' },
+    { name: 'Gmail Bridge', icon: icon3, alt: 'Gmail Bridge app icon' },
+    { name: 'IONOS Mail', icon: icon4, alt: 'IONOS Mail app icon' },
+    { name: 'Google Dev Console', icon: icon5, alt: 'Google Dev Console app icon' },
+    { name: 'Apple Dev Connect', icon: icon6, alt: 'Apple Dev Connect app icon' },
+    { name: 'StrideGuide', icon: strideGuide, alt: 'StrideGuide app icon' },
+    { name: 'App 8', icon: icon7, alt: 'App 8 icon' },
+    { name: 'App 9', icon: icon8, alt: 'App 9 icon' },
+    { name: 'App 10', icon: icon1, alt: 'App 10 icon' },
   ];
 
   return (
