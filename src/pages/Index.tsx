@@ -37,7 +37,7 @@ const Index = () => {
     { name: 'AutoRepAi', icon: icon3, alt: 'AutoRepAi app icon' },
     { name: 'FLOWBills', icon: icon4, alt: 'FLOWBills app icon' },
     { name: 'RBP', icon: icon5, alt: 'RBP app icon' },
-    { name: 'TL247', icon: icon6, alt: 'TL247 app icon' },
+    { name: 'APEX', icon: icon6, alt: 'APEX app icon' },
     { name: 'StrideGuide', icon: strideGuide, alt: 'StrideGuide app icon' },
     { name: 'RobuxMinerPro', icon: icon7, alt: 'RobuxMinerPro icon' },
     { name: 'JubeeLove', icon: icon8, alt: 'JubeeLove icon' },
