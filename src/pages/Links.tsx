@@ -9,6 +9,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, ExternalLink, Star, Trash2 } from 'lucide-react';
+import { z } from 'zod';
+
+const linkSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
+  url: z.string().trim().url("Invalid URL format").max(2048, "URL must be less than 2048 characters"),
+  description: z.string().max(1000, "Description must be less than 1000 characters").optional(),
+});
 
 type Link = {
   id: string;
@@ -62,10 +69,25 @@ const Links = () => {
     e.preventDefault();
     if (!user) return;
 
-    const { error } = await supabase.from('links').insert({
-      ...newLink,
+    // Validate input before database operation
+    const validation = linkSchema.safeParse(newLink);
+    
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0]?.message || 'Invalid input';
+      toast({
+        title: 'Validation Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const { error } = await supabase.from('links').insert([{
+      title: validation.data.title,
+      url: validation.data.url,
+      description: validation.data.description || null,
       user_id: user.id,
-    });
+    }]);
 
     if (error) {
       toast({
