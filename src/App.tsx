@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DashboardLayout } from "./components/DashboardLayout";
 import { ConsentBanner } from "./components/ConsentBanner";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useOfflineSupport } from "./hooks/useOfflineSupport";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -34,29 +35,31 @@ const AppContent = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AppContent />
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ConsentBanner />
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Auth />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
-            <Route path="/links" element={<DashboardLayout><Links /></DashboardLayout>} />
-            <Route path="/files" element={<DashboardLayout><Files /></DashboardLayout>} />
-            <Route path="/automations" element={<DashboardLayout><Automations /></DashboardLayout>} />
-            <Route path="/integrations" element={<DashboardLayout><Integrations /></DashboardLayout>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ConsentBanner />
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Auth />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
+              <Route path="/links" element={<DashboardLayout><Links /></DashboardLayout>} />
+              <Route path="/files" element={<DashboardLayout><Files /></DashboardLayout>} />
+              <Route path="/automations" element={<DashboardLayout><Automations /></DashboardLayout>} />
+              <Route path="/integrations" element={<DashboardLayout><Integrations /></DashboardLayout>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

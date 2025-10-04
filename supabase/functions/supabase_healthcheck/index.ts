@@ -5,6 +5,27 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Simple in-memory rate limiting
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = { maxRequests: 10, windowMs: 60000 }; // 10 requests per minute
+
+function checkRateLimit(identifier: string): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  let record = rateLimitStore.get(identifier);
+  
+  if (!record || now > record.resetTime) {
+    record = { count: 0, resetTime: now + RATE_LIMIT.windowMs };
+  }
+  
+  if (record.count >= RATE_LIMIT.maxRequests) {
+    return { allowed: false, remaining: 0 };
+  }
+  
+  record.count++;
+  rateLimitStore.set(identifier, record);
+  return { allowed: true, remaining: RATE_LIMIT.maxRequests - record.count };
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -16,15 +37,36 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const authHeader = req.headers.get('Authorization');
 
+    // Get user for rate limiting
+    const tempClient = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: authHeader ? { Authorization: authHeader } : {} },
+    });
+    const { data: authData } = await tempClient.auth.getUser();
+    const userId = authData?.user?.id;
+
+    // Rate limiting check
+    if (userId) {
+      const rateCheck = checkRateLimit(userId);
+      if (!rateCheck.allowed) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }),
+          { 
+            status: 429, 
+            headers: { 
+              ...corsHeaders, 
+              'Content-Type': 'application/json',
+              'X-RateLimit-Remaining': '0'
+            } 
+          }
+        );
+      }
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey, {
       global: {
         headers: authHeader ? { Authorization: authHeader } : {},
       },
     });
-
-    // Auth check
-    const { data: authData } = await supabase.auth.getUser();
-    const userId = authData?.user?.id;
 
     if (!userId) {
       return new Response(
