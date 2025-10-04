@@ -76,8 +76,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Both tests passed
+    // Both tests passed - Add security headers
     console.log('✅ Health check passed');
+    
+    const securityHeaders = {
+      ...corsHeaders,
+      'Content-Type': 'application/json',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
+    };
+    
     return new Response(
       JSON.stringify({ 
         status: 'OK',
@@ -89,7 +99,7 @@ Deno.serve(async (req) => {
         },
         healthCheckId: writeData.id
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: securityHeaders }
     );
 
   } catch (error) {

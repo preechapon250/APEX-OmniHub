@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DashboardLayout } from "./components/DashboardLayout";
 import { ConsentBanner } from "./components/ConsentBanner";
+import { useOfflineSupport } from "./hooks/useOfflineSupport";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -16,10 +17,25 @@ import Integrations from "./pages/Integrations";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    },
+  },
+});
+
+const AppContent = () => {
+  useOfflineSupport();
+  return null;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <AppContent />
     <TooltipProvider>
       <Toaster />
       <Sonner />

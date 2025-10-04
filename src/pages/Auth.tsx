@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { z } from 'zod';
 import apexLogo from '@/assets/apex_emblem_logo.svg';
+import { checkRateLimit } from '@/lib/ratelimit';
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -39,6 +40,18 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Rate limiting check
+    const rateCheck = checkRateLimit('signup', 3, 300000); // 3 attempts per 5 min
+    if (!rateCheck.allowed) {
+      toast({
+        title: 'Too many attempts',
+        description: `Please wait ${Math.ceil(rateCheck.resetIn / 1000)} seconds before trying again.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -82,6 +95,18 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Rate limiting check
+    const rateCheck = checkRateLimit(`signin-${email}`, 5, 300000); // 5 attempts per 5 min
+    if (!rateCheck.allowed) {
+      toast({
+        title: 'Too many attempts',
+        description: `Please wait ${Math.ceil(rateCheck.resetIn / 1000)} seconds before trying again.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setLoading(true);
 
     try {

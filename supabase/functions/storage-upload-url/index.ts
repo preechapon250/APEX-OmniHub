@@ -43,10 +43,22 @@ serve(async (req) => {
       });
     }
 
-    // Sanitize filename and create path
-    const safe = filename.replace(/[^\w.\-]+/g, "_").slice(0, 180);
+    // Enhanced filename sanitization
+    const safe = filename
+      .replace(/[^\w.\-]+/g, "_")
+      .replace(/\.{2,}/g, ".")  // Prevent directory traversal
+      .replace(/^\.+/, "")       // Remove leading dots
+      .slice(0, 180);
+    
+    // Validate file size (10MB limit)
+    if (size && size > 10 * 1024 * 1024) {
+      return new Response(JSON.stringify({ error: "File size exceeds 10MB limit" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+    
     const path = `${user.id}/${Date.now()}-${safe}`;
-
     console.log(`Creating signed upload URL for path: ${path}`);
 
     // Create signed upload URL (valid for ~2 hours)
