@@ -68,18 +68,28 @@ export async function processQueuedRequests(): Promise<void> {
   const requests = [...requestQueue];
   requestQueue.length = 0;
 
-  for (const item of requests) {
-    try {
-      await item.request();
-      console.log(`✅ Successfully processed queued request ${item.id}`);
-    } catch (error) {
-      console.error(`❌ Failed to process request ${item.id}:`, error);
-      
-      if (item.retries < MAX_RETRIES) {
-        item.retries++;
-        requestQueue.push(item);
+  // Process requests with concurrency limit for better performance
+  const CONCURRENCY_LIMIT = 3;
+  
+  for (let i = 0; i < requests.length; i += CONCURRENCY_LIMIT) {
+    const batch = requests.slice(i, i + CONCURRENCY_LIMIT);
+    const results = await Promise.allSettled(
+      batch.map(item => item.request())
+    );
+
+    results.forEach((result, index) => {
+      const item = batch[index];
+      if (result.status === 'fulfilled') {
+        console.log(`✅ Successfully processed queued request ${item.id}`);
+      } else {
+        console.error(`❌ Failed to process request ${item.id}:`, result.reason);
+        
+        if (item.retries < MAX_RETRIES) {
+          item.retries++;
+          requestQueue.push(item);
+        }
       }
-    }
+    });
   }
 }
 
