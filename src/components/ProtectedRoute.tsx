@@ -6,38 +6,31 @@ import { Loader2, ShieldAlert } from 'lucide-react';
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [devBypass, setDevBypass] = useState(false);
+  const [devBypass, setDevBypass] = useState(() => {
+    return localStorage.getItem('__DEV_BYPASS__') === 'true';
+  });
 
-  // Check for dev bypass on mount and listen for storage changes
+  // Listen for key combo to toggle bypass
   useEffect(() => {
-    const checkDevBypass = () => {
-      const bypass = localStorage.getItem('__DEV_BYPASS__') === 'true';
-      setDevBypass(bypass);
-    };
-    
-    checkDevBypass();
-    window.addEventListener('storage', checkDevBypass);
-    
-    // Secret key combo: Ctrl+Shift+D
     const handleKeyCombo = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-        const newValue = localStorage.getItem('__DEV_BYPASS__') !== 'true';
+        e.preventDefault();
+        const newValue = !devBypass;
         localStorage.setItem('__DEV_BYPASS__', String(newValue));
         setDevBypass(newValue);
         console.log(`🔓 DEV BYPASS ${newValue ? 'ENABLED' : 'DISABLED'}`);
+        window.location.reload(); // Reload to apply changes
       }
     };
     
     window.addEventListener('keydown', handleKeyCombo);
-    
-    return () => {
-      window.removeEventListener('storage', checkDevBypass);
-      window.removeEventListener('keydown', handleKeyCombo);
-    };
-  }, []);
+    return () => window.removeEventListener('keydown', handleKeyCombo);
+  }, [devBypass]);
 
   useEffect(() => {
+    console.log('ProtectedRoute check:', { loading, hasUser: !!user, devBypass });
     if (!loading && !user && !devBypass) {
+      console.log('Redirecting to /auth');
       navigate('/auth');
     }
   }, [user, loading, devBypass, navigate]);
