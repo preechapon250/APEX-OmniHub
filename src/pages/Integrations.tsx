@@ -3,21 +3,51 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Globe, Check, X, ExternalLink } from 'lucide-react';
+import { Globe, Check, X, ExternalLink, MessageCircle, Facebook, Mail, Youtube, Instagram, Music, Zap, ShoppingBag, Server, Bot, BarChart3, Smartphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
+interface Integration {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+  icon: any;
+  requiresApiKey: boolean;
+  requiresUsername?: boolean;
+}
+
 const Integrations = () => {
   const { user } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [webnamesIntegration, setWebnamesIntegration] = useState<any>(null);
+  const [connectedIntegrations, setConnectedIntegrations] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     apiKey: '',
     apiUsername: '',
   });
+
+  const availableIntegrations: Integration[] = [
+    { id: '1', name: 'TradeLine 24/7', type: 'tradeline247', description: 'Analytics and business intelligence', icon: BarChart3, requiresApiKey: true },
+    { id: '2', name: 'WhatsApp', type: 'whatsapp', description: 'Business messaging platform', icon: MessageCircle, requiresApiKey: true },
+    { id: '3', name: 'Facebook', type: 'facebook', description: 'Social media integration', icon: Facebook, requiresApiKey: true },
+    { id: '4', name: 'Messenger', type: 'messenger', description: 'Facebook Messenger integration', icon: MessageCircle, requiresApiKey: true },
+    { id: '5', name: 'Google Apps', type: 'google', description: 'Google Workspace integration', icon: Mail, requiresApiKey: true },
+    { id: '6', name: 'YouTube', type: 'youtube', description: 'Video platform integration', icon: Youtube, requiresApiKey: true },
+    { id: '7', name: 'Instagram', type: 'instagram', description: 'Social media integration', icon: Instagram, requiresApiKey: true },
+    { id: '8', name: 'TikTok', type: 'tiktok', description: 'Short video platform', icon: Music, requiresApiKey: true },
+    { id: '9', name: 'Zapier', type: 'zapier', description: 'Automation platform', icon: Zap, requiresApiKey: true },
+    { id: '10', name: 'Klaviyo', type: 'klaviyo', description: 'Email marketing automation', icon: Mail, requiresApiKey: true },
+    { id: '11', name: 'Gmail', type: 'gmail', description: 'Email service integration', icon: Mail, requiresApiKey: true },
+    { id: '12', name: 'IONOS.ca', type: 'ionos', description: 'Hosting and domain services', icon: Server, requiresApiKey: true, requiresUsername: true },
+    { id: '13', name: 'Webnames.ca', type: 'webnames', description: 'Domain management', icon: Globe, requiresApiKey: true, requiresUsername: true },
+    { id: '14', name: 'Samsung Apps', type: 'samsung', description: 'Native Samsung integrations', icon: Smartphone, requiresApiKey: false },
+    { id: '15', name: 'ChatGPT', type: 'chatgpt', description: 'AI assistant integration', icon: Bot, requiresApiKey: true },
+    { id: '16', name: 'Grok', type: 'grok', description: 'AI assistant by xAI', icon: Bot, requiresApiKey: true },
+  ];
 
   useEffect(() => {
     fetchIntegrations();
@@ -29,41 +59,60 @@ const Integrations = () => {
     const { data, error } = await supabase
       .from('integrations')
       .select('*')
-      .eq('user_id', user.id)
-      .eq('type', 'webnames')
-      .single();
+      .eq('user_id', user.id);
 
     if (!error && data) {
-      setWebnamesIntegration(data);
+      setConnectedIntegrations(data);
     }
+  };
+
+  const isConnected = (type: string) => {
+    return connectedIntegrations.some(int => int.type === type);
+  };
+
+  const getConnectedIntegration = (type: string) => {
+    return connectedIntegrations.find(int => int.type === type);
+  };
+
+  const openConnectDialog = (integration: Integration) => {
+    setSelectedIntegration(integration);
+    setFormData({ apiKey: '', apiUsername: '' });
+    setIsDialogOpen(true);
   };
 
   const handleConnect = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedIntegration) return;
+    
     setIsLoading(true);
 
     try {
+      const config: any = {};
+      if (selectedIntegration.requiresApiKey) {
+        config.apiKey = formData.apiKey;
+      }
+      if (selectedIntegration.requiresUsername) {
+        config.apiUsername = formData.apiUsername;
+      }
+
       const { data, error } = await supabase
         .from('integrations')
         .upsert({
           user_id: user?.id,
-          name: 'Webnames.ca',
-          type: 'webnames',
+          name: selectedIntegration.name,
+          type: selectedIntegration.type,
           status: 'active',
-          config: {
-            apiKey: formData.apiKey,
-            apiUsername: formData.apiUsername,
-          },
+          config,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setWebnamesIntegration(data);
       setIsDialogOpen(false);
       setFormData({ apiKey: '', apiUsername: '' });
-      toast.success('Webnames.ca integration connected successfully!');
+      setSelectedIntegration(null);
+      toast.success(`${selectedIntegration.name} integration connected successfully!`);
       fetchIntegrations();
     } catch (error) {
       console.error('Error connecting integration:', error);
@@ -73,19 +122,20 @@ const Integrations = () => {
     }
   };
 
-  const handleDisconnect = async () => {
-    if (!webnamesIntegration) return;
+  const handleDisconnect = async (integration: Integration) => {
+    const connected = getConnectedIntegration(integration.type);
+    if (!connected) return;
 
     try {
       const { error } = await supabase
         .from('integrations')
         .delete()
-        .eq('id', webnamesIntegration.id);
+        .eq('id', connected.id);
 
       if (error) throw error;
 
-      setWebnamesIntegration(null);
-      toast.success('Webnames.ca integration disconnected');
+      toast.success(`${integration.name} integration disconnected`);
+      fetchIntegrations();
     } catch (error) {
       console.error('Error disconnecting integration:', error);
       toast.error('Failed to disconnect integration');
@@ -96,142 +146,116 @@ const Integrations = () => {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Integrations</h1>
-        <p className="text-muted-foreground">Connect external services and APIs</p>
+        <p className="text-muted-foreground">Connect external services and APIs to enhance your workflow</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Webnames.ca Integration Card */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Globe className="h-6 w-6 text-primary" />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {availableIntegrations.map((integration) => {
+          const connected = isConnected(integration.type);
+          const Icon = integration.icon;
+          
+          return (
+            <Card key={integration.id}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">{integration.name}</CardTitle>
+                    </div>
+                  </div>
+                  {connected && (
+                    <div className="flex items-center gap-1 text-green-600">
+                      <Check className="h-3 w-3" />
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <CardTitle className="text-lg">Webnames.ca</CardTitle>
-                  <CardDescription>Domain management</CardDescription>
-                </div>
-              </div>
-              {webnamesIntegration && (
-                <div className="flex items-center gap-1 text-green-600">
-                  <Check className="h-4 w-4" />
-                  <span className="text-xs font-medium">Connected</span>
-                </div>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Manage your domains and DNS records directly from your dashboard.
-            </p>
-            <div className="flex gap-2">
-              {webnamesIntegration ? (
-                <>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="flex-1">
+                <CardDescription className="text-xs mt-2">
+                  {integration.description}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  {connected ? (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => openConnectDialog(integration)}
+                      >
                         Configure
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Webnames.ca Configuration</DialogTitle>
-                        <DialogDescription>
-                          Update your Webnames.ca API credentials
-                        </DialogDescription>
-                      </DialogHeader>
-                      <form onSubmit={handleConnect} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="apiUsername">API Username</Label>
-                          <Input
-                            id="apiUsername"
-                            placeholder="Your API username"
-                            value={formData.apiUsername}
-                            onChange={(e) => setFormData({ ...formData, apiUsername: e.target.value })}
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="apiKey">API Key</Label>
-                          <Input
-                            id="apiKey"
-                            type="password"
-                            placeholder="Your API key"
-                            value={formData.apiKey}
-                            onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-                            required
-                          />
-                        </div>
-                        <Button type="submit" className="w-full" disabled={isLoading}>
-                          {isLoading ? 'Updating...' : 'Update Configuration'}
-                        </Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-                  <Button 
-                    variant="destructive" 
-                    size="icon"
-                    onClick={handleDisconnect}
-                    title="Disconnect"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </>
-              ) : (
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full">Connect</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Connect Webnames.ca</DialogTitle>
-                      <DialogDescription>
-                        Enter your Webnames.ca API credentials to connect your account.
-                        <a 
-                          href="https://www.webnames.ca/account/api" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-primary hover:underline mt-2"
-                        >
-                          Get your API credentials
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleConnect} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="apiUsername">API Username</Label>
-                        <Input
-                          id="apiUsername"
-                          placeholder="Your API username"
-                          value={formData.apiUsername}
-                          onChange={(e) => setFormData({ ...formData, apiUsername: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="apiKey">API Key</Label>
-                        <Input
-                          id="apiKey"
-                          type="password"
-                          placeholder="Your API key"
-                          value={formData.apiKey}
-                          onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <Button type="submit" className="w-full" disabled={isLoading}>
-                        {isLoading ? 'Connecting...' : 'Connect Integration'}
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => handleDisconnect(integration)}
+                      >
+                        <X className="h-4 w-4" />
                       </Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                    </>
+                  ) : (
+                    <Button 
+                      className="w-full" 
+                      size="sm"
+                      onClick={() => openConnectDialog(integration)}
+                    >
+                      Connect
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+
+      {/* Connection Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Connect {selectedIntegration?.name}</DialogTitle>
+            <DialogDescription>
+              {selectedIntegration?.requiresApiKey 
+                ? `Enter your ${selectedIntegration.name} API credentials to connect your account.`
+                : `Configure your ${selectedIntegration?.name} integration.`
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleConnect} className="space-y-4">
+            {selectedIntegration?.requiresUsername && (
+              <div className="space-y-2">
+                <Label htmlFor="apiUsername">Username / Account ID</Label>
+                <Input
+                  id="apiUsername"
+                  placeholder="Your username or account ID"
+                  value={formData.apiUsername}
+                  onChange={(e) => setFormData({ ...formData, apiUsername: e.target.value })}
+                  required
+                />
+              </div>
+            )}
+            {selectedIntegration?.requiresApiKey && (
+              <div className="space-y-2">
+                <Label htmlFor="apiKey">API Key</Label>
+                <Input
+                  id="apiKey"
+                  type="password"
+                  placeholder="Your API key"
+                  value={formData.apiKey}
+                  onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
+                  required
+                />
+              </div>
+            )}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Connecting...' : 'Connect Integration'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
