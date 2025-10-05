@@ -54,11 +54,6 @@ const Index = () => {
             
             {/* Left Column - Content */}
             <div className="max-w-[560px] space-y-6 lg:space-y-8">
-              {/* Eyebrow */}
-              <p className="text-sm font-medium text-[hsl(var(--navy))] tracking-wide uppercase">
-                APEX Business Systems
-              </p>
-
               {/* H1 */}
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-[hsl(var(--navy))]">
                 APEX Business Systems, Apps for Life!
