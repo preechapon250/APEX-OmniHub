@@ -21,6 +21,14 @@ import Automations from "./pages/Automations";
 import Integrations from "./pages/Integrations";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
+import TradeLine247 from "./pages/apps/TradeLine247";
+import AutoRepAi from "./pages/apps/AutoRepAi";
+import KeepSafe from "./pages/apps/KeepSafe";
+import StrideGuide from "./pages/apps/StrideGuide";
+import RobuxMinerPro from "./pages/apps/RobuxMinerPro";
+import FLOWBills from "./pages/apps/FLOWBills";
+import JubeeLove from "./pages/apps/JubeeLove";
+import BuiltCanadian from "./pages/apps/BuiltCanadian";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,6 +84,14 @@ const App = () => (
               <Route path="/files" element={<DashboardLayout><Files /></DashboardLayout>} />
               <Route path="/automations" element={<DashboardLayout><Automations /></DashboardLayout>} />
               <Route path="/integrations" element={<DashboardLayout><Integrations /></DashboardLayout>} />
+              <Route path="/apps/tradeline247" element={<TradeLine247 />} />
+              <Route path="/apps/autorepai" element={<AutoRepAi />} />
+              <Route path="/apps/keepsafe" element={<KeepSafe />} />
+              <Route path="/apps/strideguide" element={<StrideGuide />} />
+              <Route path="/apps/robuxminerpro" element={<RobuxMinerPro />} />
+              <Route path="/apps/flowbills" element={<FLOWBills />} />
+              <Route path="/apps/jubeelove" element={<JubeeLove />} />
+              <Route path="/apps/built-canadian" element={<BuiltCanadian />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

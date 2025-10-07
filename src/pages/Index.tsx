@@ -41,15 +41,15 @@ const Index = () => {
   };
 
   const apps = [
-    { name: 'TradeLine 24/7', icon: tradeline247, alt: 'TradeLine 24/7 app icon' },
-    { name: 'Built Canadian', icon: icon2, alt: 'Built Canadian app icon' },
-    { name: 'AutoRepAi', icon: icon3, alt: 'AutoRepAi app icon' },
-    { name: 'FLOWBills', icon: icon4, alt: 'FLOWBills app icon' },
-    { name: 'RobuxMinerPro', icon: icon5, alt: 'RobuxMinerPro app icon' },
-    { name: 'APEX', icon: icon6, alt: 'APEX app icon' },
-    { name: 'StrideGuide', icon: strideGuide, alt: 'StrideGuide app icon' },
-    { name: 'KeepSafe', icon: keepsafeIcon, alt: 'KeepSafe icon' },
-    { name: 'JubeeLove', icon: icon8, alt: 'JubeeLove icon' },
+    { name: 'TradeLine 24/7', icon: tradeline247, alt: 'TradeLine 24/7 app icon', path: '/apps/tradeline247' },
+    { name: 'Built Canadian', icon: icon2, alt: 'Built Canadian app icon', path: '/apps/built-canadian' },
+    { name: 'AutoRepAi', icon: icon3, alt: 'AutoRepAi app icon', path: '/apps/autorepai' },
+    { name: 'FLOWBills', icon: icon4, alt: 'FLOWBills app icon', path: '/apps/flowbills' },
+    { name: 'RobuxMinerPro', icon: icon5, alt: 'RobuxMinerPro app icon', path: '/apps/robuxminerpro' },
+    { name: 'APEX', icon: icon6, alt: 'APEX app icon', path: '/dashboard' },
+    { name: 'StrideGuide', icon: strideGuide, alt: 'StrideGuide app icon', path: '/apps/strideguide' },
+    { name: 'KeepSafe', icon: keepsafeIcon, alt: 'KeepSafe icon', path: '/apps/keepsafe' },
+    { name: 'JubeeLove', icon: icon8, alt: 'JubeeLove icon', path: '/apps/jubeelove' },
   ];
 
   return (
@@ -93,13 +93,18 @@ const Index = () => {
                     key={index}
                     role="group"
                     aria-label={`${app.name} tile`}
-                    className={`aspect-square rounded-xl p-4 flex flex-col items-center justify-center text-center transition-transform hover:scale-105 ${
+                    className={`aspect-square rounded-xl p-4 flex flex-col items-center justify-center text-center transition-transform hover:scale-105 cursor-pointer ${
                       app.icon 
                      ? 'bg-white border-2 border-[hsl(var(--navy))] shadow-lg' 
                         : 'bg-white border-2 border-dashed border-muted-foreground/30'
                     }`}
-                    onClick={app.name === 'APEX' && isInstallable ? handlePWAInstall : undefined}
-                    style={app.name === 'APEX' && isInstallable ? { cursor: 'pointer' } : undefined}
+                    onClick={() => {
+                      if (app.name === 'APEX' && isInstallable) {
+                        handlePWAInstall();
+                      } else if (app.path) {
+                        navigate(app.path);
+                      }
+                    }}
                   >
                     {app.icon ? (
                       <>
@@ -144,13 +149,18 @@ const Index = () => {
                 key={index}
                 role="group"
                 aria-label={`${app.name} tile`}
-                className={`aspect-square rounded-xl p-6 flex flex-col items-center justify-center text-center transition-all hover:scale-105 ${
+                className={`aspect-square rounded-xl p-6 flex flex-col items-center justify-center text-center transition-all hover:scale-105 cursor-pointer ${
                   app.icon 
                     ? 'bg-white border-2 border-[hsl(var(--navy))] shadow-lg hover:shadow-xl' 
                     : 'bg-white border-2 border-dashed border-muted-foreground/30'
                 }`}
-                onClick={app.name === 'APEX' && isInstallable ? handlePWAInstall : undefined}
-                style={app.name === 'APEX' && isInstallable ? { cursor: 'pointer' } : undefined}
+                onClick={() => {
+                  if (app.name === 'APEX' && isInstallable) {
+                    handlePWAInstall();
+                  } else if (app.path) {
+                    navigate(app.path);
+                  }
+                }}
               >
                 {app.icon ? (
                   <>
