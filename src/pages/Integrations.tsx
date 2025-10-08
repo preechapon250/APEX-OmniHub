@@ -80,6 +80,29 @@ const Integrations = () => {
     setIsDialogOpen(true);
   };
 
+  const testConnection = async (integrationId: string) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('test-integration', {
+        body: { integrationId },
+      });
+
+      if (error) throw error;
+
+      if (data.connected) {
+        toast.success(data.message || 'Integration is working correctly');
+      } else {
+        toast.error(data.message || 'Unable to connect to service');
+      }
+
+      fetchIntegrations();
+    } catch (error: any) {
+      toast.error(error.message || 'Test failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleConnect = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedIntegration) return;
@@ -101,7 +124,7 @@ const Integrations = () => {
           user_id: user?.id,
           name: selectedIntegration.name,
           type: selectedIntegration.type,
-          status: 'active',
+          status: 'pending',
           config,
         })
         .select()
@@ -109,10 +132,12 @@ const Integrations = () => {
 
       if (error) throw error;
 
+      // Test the connection immediately
+      await testConnection(data.id);
+
       setIsDialogOpen(false);
       setFormData({ apiKey: '', apiUsername: '' });
       setSelectedIntegration(null);
-      toast.success(`${selectedIntegration.name} integration connected successfully!`);
       fetchIntegrations();
     } catch (error) {
       console.error('Error connecting integration:', error);
@@ -184,14 +209,19 @@ const Integrations = () => {
                         variant="outline" 
                         size="sm"
                         className="flex-1"
-                        onClick={() => openConnectDialog(integration)}
+                        onClick={() => {
+                          const connectedInt = getConnectedIntegration(integration.type);
+                          if (connectedInt) testConnection(connectedInt.id);
+                        }}
+                        disabled={isLoading}
                       >
-                        Configure
+                        Test
                       </Button>
                       <Button 
                         variant="destructive" 
                         size="sm"
                         onClick={() => handleDisconnect(integration)}
+                        disabled={isLoading}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -201,6 +231,7 @@ const Integrations = () => {
                       className="w-full" 
                       size="sm"
                       onClick={() => openConnectDialog(integration)}
+                      disabled={isLoading}
                     >
                       Connect
                     </Button>

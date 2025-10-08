@@ -1,4 +1,4 @@
-import { Home, Link2, FileText, Zap, Package, LogOut } from 'lucide-react';
+import { Home, Link2, FileText, Zap, Package, LogOut, Brain } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import {
   Sidebar,
@@ -21,6 +21,7 @@ const navItems = [
   { title: 'Files', url: '/files', icon: FileText },
   { title: 'Automations', url: '/automations', icon: Zap },
   { title: 'Integrations', url: '/integrations', icon: Package },
+  { title: 'APEX Assistant', url: '/apex', icon: Brain },
 ];
 
 export function AppSidebar() {

@@ -19,6 +19,7 @@ import Links from "./pages/Links";
 import Files from "./pages/Files";
 import Automations from "./pages/Automations";
 import Integrations from "./pages/Integrations";
+import ApexAssistant from "./pages/ApexAssistant";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 import TradeLine247 from "./pages/apps/TradeLine247";
@@ -83,8 +84,9 @@ const App = () => (
               <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
               <Route path="/links" element={<DashboardLayout><Links /></DashboardLayout>} />
               <Route path="/files" element={<DashboardLayout><Files /></DashboardLayout>} />
-              <Route path="/automations" element={<DashboardLayout><Automations /></DashboardLayout>} />
-              <Route path="/integrations" element={<DashboardLayout><Integrations /></DashboardLayout>} />
+            <Route path="/automations" element={<DashboardLayout><Automations /></DashboardLayout>} />
+            <Route path="/integrations" element={<DashboardLayout><Integrations /></DashboardLayout>} />
+            <Route path="/apex" element={<DashboardLayout><ApexAssistant /></DashboardLayout>} />
               <Route path="/apps/tradeline247" element={<TradeLine247 />} />
               <Route path="/apps/autorepai" element={<AutoRepAi />} />
               <Route path="/apps/keepsafe" element={<KeepSafe />} />
