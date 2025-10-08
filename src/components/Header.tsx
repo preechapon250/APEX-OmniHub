@@ -19,9 +19,14 @@ export const Header = () => {
           <img src={apexWordmark} alt="Apex" className="h-[142px] w-auto" style={{ transform: 'skewX(-5deg) translateY(0.2cm) scaleX(1.2)' }} />
         </div>
 
-        {/* Right group - empty for now, nav can go here */}
+        {/* Right group */}
         <div className="flex items-center gap-4">
-          {/* Future nav items */}
+          <Link 
+            to="/tech-specs" 
+            className="text-sm font-medium text-[hsl(var(--navy))] hover:text-[hsl(var(--navy-600))] transition-colors"
+          >
+            Tech Specs
+          </Link>
         </div>
       </div>
     </header>;

@@ -29,6 +29,7 @@ import RobuxMinerPro from "./pages/apps/RobuxMinerPro";
 import FLOWBills from "./pages/apps/FLOWBills";
 import JubeeLove from "./pages/apps/JubeeLove";
 import BuiltCanadian from "./pages/apps/BuiltCanadian";
+import TechSpecs from "./pages/TechSpecs";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -92,6 +93,7 @@ const App = () => (
               <Route path="/apps/flowbills" element={<FLOWBills />} />
               <Route path="/apps/jubeelove" element={<JubeeLove />} />
               <Route path="/apps/built-canadian" element={<BuiltCanadian />} />
+              <Route path="/tech-specs" element={<TechSpecs />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
