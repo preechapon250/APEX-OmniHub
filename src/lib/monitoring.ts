@@ -67,6 +67,43 @@ function persistLog(key: string, entry: unknown, max: number) {
   }
 }
 
+async function ensureSentry() {
+  if (sentryInitialized || sentry) return sentry;
+
+  const dsn = import.meta.env.VITE_SENTRY_DSN;
+  if (!dsn) return null;
+
+  try {
+    sentry = await import('https://esm.sh/@sentry/browser@7.120.1');
+    const { BrowserTracing } = await import('https://esm.sh/@sentry/tracing@7.120.1');
+
+    sentry.init({
+      dsn,
+      environment: getEnvironment(),
+      release: `${appConfig.name}@${appConfig.version}`,
+      integrations: [new BrowserTracing()],
+      tracesSampleRate: 0.2,
+    });
+    sentryInitialized = true;
+    console.log('✅ Sentry monitoring initialized');
+  } catch (error) {
+    console.warn('Sentry initialization failed; continuing without Sentry', error);
+  }
+
+  return sentry;
+}
+
+function persistLog(key: string, entry: any, max: number) {
+  try {
+    const logs = JSON.parse(localStorage.getItem(key) || '[]');
+    logs.push(entry);
+    if (logs.length > max) logs.shift();
+    localStorage.setItem(key, JSON.stringify(logs));
+  } catch {
+    // non-fatal
+  }
+}
+
 /**
  * Log error to monitoring service
  */
