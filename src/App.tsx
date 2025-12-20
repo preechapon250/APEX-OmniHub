@@ -37,6 +37,7 @@ const JubeeLove = lazy(() => import("./pages/apps/JubeeLove"));
 const BuiltCanadian = lazy(() => import("./pages/apps/BuiltCanadian"));
 const TechSpecs = lazy(() => import("./pages/TechSpecs"));
 const Diagnostics = lazy(() => import("./pages/Diagnostics"));
+const Health = lazy(() => import("./pages/Health"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -173,6 +174,7 @@ const App = () => (
                 <Route path="/apps/built-canadian" element={<BuiltCanadian />} />
                 <Route path="/tech-specs" element={<TechSpecs />} />
                 <Route path="/diagnostics" element={<DashboardLayout><Diagnostics /></DashboardLayout>} />
+                <Route path="/health" element={<Health />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

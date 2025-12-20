@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:prompt-defense": "vitest run tests/prompt-defense",
+    "smoke-test": "tsx scripts/smoke-test.ts",
     "guardian:status": "tsx scripts/guardian/status.ts",
     "zero-trust:baseline": "tsx scripts/zero-trust/baseline-cli.ts",
     "dr:test": "tsx scripts/dr/run-dr-test.ts --dry-run",
