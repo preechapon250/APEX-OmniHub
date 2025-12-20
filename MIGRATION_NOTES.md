@@ -26,8 +26,8 @@
 - [x] Add health check endpoint
 
 ### Phase 3 — Data Migration
-- [ ] Schema-only migration (default)
-- [ ] [OPTIONAL] Full data migration if credentials provided
+- [x] Schema-only migration (default - no data migration needed)
+- [ ] [OPTIONAL] Full data migration if credentials provided (not applicable)
 
 ### Phase 4 — DevOps/Deploy
 - [x] Configure Vercel deployment (vercel.json created)
@@ -37,10 +37,10 @@
 - [x] Add observability hooks (existing monitoring)
 
 ### Phase 5 — Validation
-- [ ] Create smoke test script
-- [ ] Verify no Lovable coupling remains
-- [ ] Test critical user flows
-- [ ] GO/NO-GO decision
+- [x] Create smoke test script
+- [x] Verify no Lovable coupling remains (legacy files exist but unused)
+- [ ] Test critical user flows (manual testing required after deployment)
+- [x] GO/NO-GO decision: ✅ GO
 
 ---
 
@@ -194,7 +194,35 @@
 
 ## Decisions & Rationale
 
-*To be filled as migration progresses*
+### Decision 1: Direct Supabase Writes vs Edge Functions
+**Choice**: Direct Supabase writes from client code
+**Rationale**: 
+- Simpler architecture (no proxy layer)
+- Better performance (direct database access)
+- RLS policies handle security
+- Edge Functions kept for backward compatibility but not required
+
+### Decision 2: Keep Legacy Lovable Files
+**Choice**: Leave unused Lovable files in codebase (marked as deprecated)
+**Rationale**:
+- Non-blocking (files not imported)
+- Can be removed in future cleanup
+- Maintains git history for reference
+
+### Decision 3: Schema-Only Migration (Default)
+**Choice**: No data migration from Lovable backend
+**Rationale**:
+- No access to old Lovable database credentials
+- Fresh start with new Supabase instance
+- Audit logs and device registry are operational data (can rebuild)
+
+### Decision 4: Vercel Deployment
+**Choice**: Use Vercel (already connected per user)
+**Rationale**:
+- Already configured and working
+- Excellent SPA support
+- Automatic preview deployments
+- Easy environment variable management
 
 ---
 
