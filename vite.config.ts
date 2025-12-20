@@ -8,41 +8,14 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    proxy: {
-      // Proxy Lovable API routes to Supabase functions in development
-      '/api/lovable/device': {
-        target: process.env.VITE_SUPABASE_URL 
-          ? `${process.env.VITE_SUPABASE_URL}/functions/v1/lovable-device`
-          : 'http://localhost:54321/functions/v1/lovable-device',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/lovable/, ''),
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('Lovable device proxy error:', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('Proxying Lovable device request:', req.method, req.url);
-          });
-        },
-      },
-      '/api/lovable/audit': {
-        target: process.env.VITE_SUPABASE_URL
-          ? `${process.env.VITE_SUPABASE_URL}/functions/v1/lovable-audit`
-          : 'http://localhost:54321/functions/v1/lovable-audit',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/lovable/, ''),
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('Lovable audit proxy error:', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('Proxying Lovable audit request:', req.method, req.url);
-          });
-        },
-      },
-    },
+    // Proxy removed - app now writes directly to Supabase tables
+    // Edge functions are still available but not required for client-side operations
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react(), 
+    // lovable-tagger is optional dev tool, keep for now but can be removed later
+    mode === "development" && componentTagger()
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
