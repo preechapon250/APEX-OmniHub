@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         import.meta.env.VITE_SUPABASE_ANON_KEY ??
         env?.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
         env?.PUBLIC_SUPABASE_ANON_KEY ??
-        import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY; // Lovable Cloud publishable key
+        import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       
       // #region agent log
       log('Environment variables check', {

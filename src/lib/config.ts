@@ -197,21 +197,7 @@ export function logConfiguration(): void {
     });
   }
   
-  // Log Lovable config status
-  if (typeof window !== 'undefined') {
-    import('./lovableConfig').then(({ logLovableConfigStatus }) => {
-      logLovableConfigStatus();
-    }).catch((error) => {
-      // #region agent log
-      log('Failed to load lovableConfig', {
-        error: error instanceof Error ? error.message : 'unknown',
-      });
-      // #endregion
-      if (import.meta.env.DEV) {
-        console.warn('Failed to load Lovable config:', error);
-      }
-    });
-  }
+  // Lovable config logging removed - app now uses Supabase directly
   
   // #region agent log
   log('logConfiguration complete');

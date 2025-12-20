@@ -29,10 +29,8 @@ export default function Diagnostics() {
   const loadDiagnostics = async () => {
     setLoading(true);
     try {
-      // Check Lovable configuration
-      const lovableApiBase = import.meta.env.VITE_LOVABLE_API_BASE || '';
-      const lovableApiKey = import.meta.env.VITE_LOVABLE_API_KEY || '';
-      const lovableConfigured = !!(lovableApiBase && lovableApiKey);
+      // Lovable configuration check removed - app now uses Supabase directly
+      const lovableConfigured = false; // Legacy flag, no longer used
 
       // Check Supabase connection
       let supabaseConnected = false;
@@ -59,14 +57,9 @@ export default function Diagnostics() {
       const auditQueue = await getAuditQueueSnapshot();
       const errors = getErrorLogs();
 
-      // Get proxy URLs
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-      const deviceProxyUrl = supabaseUrl
-        ? `${new URL(supabaseUrl).origin}/functions/v1/lovable-device`
-        : import.meta.env.VITE_LOVABLE_DEVICE_PROXY || '/api/lovable/device';
-      const auditProxyUrl = supabaseUrl
-        ? `${new URL(supabaseUrl).origin}/functions/v1/lovable-audit`
-        : import.meta.env.VITE_LOVABLE_AUDIT_PROXY || '/api/lovable/audit';
+      // Proxy URLs removed - app now writes directly to Supabase tables
+      const deviceProxyUrl = 'Direct to Supabase device_registry table';
+      const auditProxyUrl = 'Direct to Supabase audit_logs table';
 
       setStatus({
         lovableConfigured,
@@ -203,22 +196,13 @@ export default function Diagnostics() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm">API Base URL:</span>
-                <Badge variant={import.meta.env.VITE_LOVABLE_API_BASE ? 'default' : 'destructive'}>
-                  {import.meta.env.VITE_LOVABLE_API_BASE ? 'Set' : 'Missing'}
+                <span className="text-sm">Status:</span>
+                <Badge variant="secondary">
+                  Migrated to Supabase
                 </Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">API Key:</span>
-                <Badge variant={import.meta.env.VITE_LOVABLE_API_KEY ? 'default' : 'destructive'}>
-                  {import.meta.env.VITE_LOVABLE_API_KEY ? 'Set' : 'Missing'}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Reachable:</span>
-                <Badge variant={status.lovableReachable ? 'default' : 'secondary'}>
-                  {status.lovableReachable ? 'Yes' : 'No'}
-                </Badge>
+              <div className="text-xs text-muted-foreground mt-2">
+                Audit logs and device registry now use Supabase directly (no Lovable API required)
               </div>
             </div>
           </CardContent>
