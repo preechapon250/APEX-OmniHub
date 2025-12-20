@@ -8,8 +8,16 @@ import { supabase } from '@/integrations/supabase/client';
  * Previously used Lovable API, now writes directly to Supabase audit_logs table
  */
 export interface AuditEventPayload {
+  id: string;
+  timestamp: string;
+  actorId?: string;
+  actionType: string;
+  resourceType?: string;
+  resourceId?: string;
+  metadata?: Record<string, unknown>;
+}
 
-type QueuedAuditEvent = AuditEventPayload & {
+export type QueuedAuditEvent = AuditEventPayload & {
   attempts: number;
   nextAttemptAt: number;
   status: 'pending' | 'failed';
