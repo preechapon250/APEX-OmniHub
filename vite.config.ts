@@ -50,8 +50,8 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom', 'scheduler'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tooltip'],
-          'query-vendor': ['@tanstack/react-query'],
+          'web3-core': ['viem', 'wagmi', '@tanstack/react-query'],
+          'ui-components': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tooltip', '@radix-ui/react-accordion', '@radix-ui/react-alert-dialog'],
           'supabase-vendor': ['@supabase/supabase-js'],
         },
         // Optimize chunk file names with content hash for better caching

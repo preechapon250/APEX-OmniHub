@@ -66,6 +66,35 @@ resource "cloudflare_rate_limit" "api" {
   }
 }
 
+# Rate Limiting for Sensitive Endpoints
+resource "cloudflare_rate_limit" "apex_sensitive_endpoints" {
+  zone_id   = var.zone_id
+  threshold = 50
+  period    = 60
+  match {
+    request {
+      url_pattern = [
+        "${var.domain}/functions/v1/web3-verify",
+        "${var.domain}/functions/v1/web3-nonce",
+        "${var.domain}/functions/v1/apex-voice"
+      ]
+    }
+  }
+  action {
+    mode = "block"
+    response {
+      status_code = 429
+      content_type = "application/json"
+      body = jsonencode({
+        error = "Rate limit exceeded"
+        message = "Too many requests to sensitive endpoint"
+        retry_after = 60
+      })
+    }
+  }
+  description = "Rate limiting for sensitive Supabase Edge Function endpoints"
+}
+
 # Page Rules
 resource "cloudflare_page_rule" "cache_static" {
   zone_id  = var.zone_id

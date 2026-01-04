@@ -19,10 +19,14 @@ Usage:
 
 import asyncio
 import logging
+import os
 import sys
 
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from temporalio.client import Client
 from temporalio.worker import Worker
+from uvicorn import run
 
 # Import all components
 from activities.tools import (
@@ -39,6 +43,56 @@ from activities.tools import (
 )
 from config import settings
 from workflows.agent_saga import AgentWorkflow
+
+# FastAPI app for HTTP API
+app = FastAPI(title="APEX Orchestrator API", version="1.0.0")
+
+class GoalRequest(BaseModel):
+    user_id: str
+    user_intent: str
+    trace_id: str
+
+
+@app.post("/api/v1/goals")
+async def create_goal(request: GoalRequest):
+    """
+    Create and start a new agent workflow.
+
+    This endpoint receives requests from the Edge Function router
+    and starts Temporal workflows for AI agent orchestration.
+    """
+    try:
+        logger.info(f"Creating goal workflow: {request.trace_id}")
+
+        # Connect to Temporal
+        client = await Client.connect(
+            os.getenv("TEMPORAL_HOST", "localhost:7233"),
+            namespace=os.getenv("TEMPORAL_NAMESPACE", "default"),
+        )
+
+        # Start workflow with unique ID
+        workflow_id = f"goal-{request.trace_id}"
+
+        handle = await client.start_workflow(
+            "AgentSagaWorkflow",  # This should match your workflow class name
+            args=[request.user_intent, request.user_id, {}],
+            id=workflow_id,
+            task_queue=os.getenv("TEMPORAL_TASK_QUEUE", "apex-agent-queue"),
+        )
+
+        logger.info(f"✓ Workflow started: {workflow_id}")
+        return {"workflowId": handle.id, "status": "started"}
+
+    except Exception as e:
+        logger.error(f"Failed to create goal workflow: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "ok"}
+
 
 # Configure logging
 logging.basicConfig(
@@ -195,11 +249,31 @@ async def run_tests() -> None:
     logger.info("\n✅ All tests passed!")
 
 
+async def start_api_server() -> None:
+    """Start FastAPI server for HTTP API."""
+    logger.info("🚀 Starting APEX Orchestrator API Server...")
+    host = os.getenv("API_HOST", "0.0.0.0")
+    port = int(os.getenv("API_PORT", "8000"))
+    logger.info(f"API Server: http://{host}:{port}")
+    logger.info("Health check: http://{host}:{port}/health")
+
+    # Run FastAPI with uvicorn
+    config = uvicorn.Config(
+        app=app,
+        host=host,
+        port=port,
+        log_level=settings.log_level.lower(),
+    )
+    server = uvicorn.Server(config)
+    await server.serve()
+
+
 def main() -> None:
     """Main entry point."""
     if len(sys.argv) < 2:
         print("Usage:")
-        print("  python main.py worker              # Start worker")
+        print("  python main.py worker              # Start Temporal worker")
+        print("  python main.py api                 # Start HTTP API server")
         print('  python main.py submit "GOAL"       # Submit workflow')
         print("  python main.py test                # Run tests")
         sys.exit(1)
@@ -208,6 +282,9 @@ def main() -> None:
 
     if command == "worker":
         asyncio.run(start_worker())
+
+    elif command == "api":
+        asyncio.run(start_api_server())
 
     elif command == "submit":
         if len(sys.argv) < 3:

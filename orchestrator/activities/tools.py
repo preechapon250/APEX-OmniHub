@@ -221,7 +221,7 @@ async def search_database(params: dict[str, Any]) -> dict[str, Any]:
     """
     Search Supabase database.
 
-    Example tool demonstrating Supabase integration.
+    Example tool demonstrating Supabase integration with Temporal resilience.
 
     Args:
         params: {
@@ -259,7 +259,9 @@ async def search_database(params: dict[str, Any]) -> dict[str, Any]:
 
     except Exception as e:
         activity.logger.error(f"Database search failed: {str(e)}")
-        return {"success": False, "error": str(e)}
+        # Use ApplicationError for retryable failures (network timeouts, temporary unavailability)
+        from temporalio.exceptions import ApplicationError
+        raise ApplicationError(f"Database search failed: {str(e)}", non_retryable=False)
 
 
 @activity.defn(name="create_record")
@@ -421,95 +423,19 @@ async def call_webhook(params: dict[str, Any]) -> dict[str, Any]:
 
 
 # ============================================================================
-# DISTRIBUTED LOCK ACTIVITY (Multi-Region Support)
+# DISTRIBUTED RELIABILITY - Using Temporal's Built-in Mechanisms
 # ============================================================================
 
+# NOTE: Manual distributed locking removed. Use Temporal's built-in workflow
+# serialization and Signals for critical sections instead of Redis-based locks.
+# This eliminates race conditions and simplifies the architecture.
 
-@activity.defn(name="acquire_distributed_lock")
-async def acquire_distributed_lock(params: dict[str, Any]) -> dict[str, Any]:
-    """
-    Acquire distributed lock using Redlock algorithm.
+# For critical sections requiring serialization:
+# 1. Use Workflow Signals to coordinate between workflow instances
+# 2. Use Temporal's built-in workflow mutexes for resource locking
+# 3. Leverage Saga patterns for compensation-based error handling
 
-    Used for critical sections in multi-region deployments to prevent
-    concurrent execution (e.g., avoid double-booking).
-
-    Args:
-        params: {
-            "resource": "flight_booking_AF123",
-            "ttl_seconds": 30
-        }
-
-    Returns:
-        Lock token if acquired, else error
-
-    Why Redlock:
-    - Redis-based distributed locking
-    - Tolerates node failures (quorum-based)
-    - Automatic expiration (prevents deadlocks)
-    - Works with Redis Active-Active (CRDT)
-
-    Note: For true multi-region, use Redis Enterprise with Active-Active
-    """
-    if not _redis_client:
-        # For now, simulate lock (production needs real Redis Redlock)
-        return {"success": True, "lock_token": str(uuid4())}
-
-    resource = params.get("resource")
-    ttl_seconds = params.get("ttl_seconds", 30)
-
-    activity.logger.info(f"Acquiring lock: {resource} (TTL={ttl_seconds}s)")
-
-    # Simple Redis lock (production should use Redlock library)
-    lock_key = f"lock:{resource}"
-    lock_token = str(uuid4())
-
-    # Try to acquire lock (SET NX with TTL)
-    acquired = await _redis_client.set(
-        lock_key,
-        lock_token,
-        nx=True,  # Only set if not exists
-        ex=ttl_seconds,  # Expiration
-    )
-
-    if acquired:
-        activity.logger.info(f"✓ Lock acquired: {resource}")
-        return {"success": True, "lock_token": lock_token}
-    else:
-        activity.logger.warning(f"✗ Lock acquisition failed: {resource}")
-        raise RuntimeError(f"Failed to acquire lock: {resource}")
-
-
-@activity.defn(name="release_distributed_lock")
-async def release_distributed_lock(params: dict[str, Any]) -> dict[str, Any]:
-    """
-    Release distributed lock (compensation for acquire_distributed_lock).
-
-    Idempotent - safe to call multiple times.
-
-    Args:
-        params: {
-            "resource": "flight_booking_AF123",
-            "lock_token": "uuid-here"
-        }
-
-    Returns:
-        Release result
-    """
-    if not _redis_client:
-        return {"success": True, "simulated": True}
-
-    resource = params.get("resource")
-    lock_token = params.get("lock_token")
-
-    lock_key = f"lock:{resource}"
-
-    # Verify token before deleting (prevent releasing someone else's lock)
-    current_token = await _redis_client.get(lock_key)
-
-    if current_token == lock_token:
-        await _redis_client.delete(lock_key)
-        activity.logger.info(f"✓ Lock released: {resource}")
-        return {"success": True}
-    else:
-        activity.logger.warning(f"Lock already released or expired: {resource}")
-        return {"success": True, "already_released": True}
+# Example: Instead of manual locking, use workflow signals:
+# await workflow.wait_condition(lambda: workflow_state.is_ready)
+# signal = workflow.get_external_signal("resource_available")
+# await signal

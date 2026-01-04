@@ -112,42 +112,64 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Test 1: Read operation - simple select guarded by RLS
-    const { error: readError } = await supabase
-      .from('profiles')
+    // Test 1: Database health - lightweight query to emergency_controls table
+    const { error: dbError } = await supabase
+      .from('emergency_controls')
       .select('id')
-      .eq('user_id', userId)
       .limit(1);
 
-    if (readError) {
-      console.error('❌ Read test failed:', readError);
+    if (dbError) {
+      console.error('❌ Database health check failed:', dbError);
       return new Response(
-        JSON.stringify({ 
-          status: 'error', 
-          test: 'read',
-          error: readError.message 
+        JSON.stringify({
+          status: 'error',
+          component: 'database',
+          error: dbError.message
         }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Test 2: Write operation - insert health check record
-
-    const { data: writeData, error: writeError } = await supabase
-      .from('health_checks')
-      .insert({ user_id: userId, status: 'ok' })
-      .select()
-      .single();
-
-    if (writeError) {
-      console.error('❌ Write test failed:', writeError);
+    // Test 2: Orchestrator health - check Python service endpoint
+    const orchestratorUrl = Deno.env.get('ORCHESTRATOR_URL');
+    if (!orchestratorUrl) {
+      console.error('❌ Orchestrator URL not configured');
       return new Response(
-        JSON.stringify({ 
-          status: 'error', 
-          test: 'write',
-          error: writeError.message 
+        JSON.stringify({
+          status: 'error',
+          component: 'orchestrator',
+          error: 'ORCHESTRATOR_URL environment variable not set'
         }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    try {
+      const orchestratorResponse = await fetch(`${orchestratorUrl}/health`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        // Short timeout to avoid hanging
+        signal: AbortSignal.timeout(5000)
+      });
+
+      if (!orchestratorResponse.ok) {
+        throw new Error(`Orchestrator returned ${orchestratorResponse.status}`);
+      }
+
+      const orchestratorHealth = await orchestratorResponse.json();
+      if (orchestratorHealth.status !== 'ok') {
+        throw new Error('Orchestrator health check failed');
+      }
+
+    } catch (error) {
+      console.error('❌ Orchestrator health check failed:', error);
+      return new Response(
+        JSON.stringify({
+          status: 'error',
+          component: 'orchestrator',
+          error: error instanceof Error ? error.message : 'Unknown orchestrator error'
+        }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -166,16 +188,15 @@ Deno.serve(async (req) => {
     };
     
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         status: 'OK',
         timestamp: new Date().toISOString(),
         duration: `${duration}ms`,
-        tests: {
-          read: 'passed',
-          write: 'passed',
+        components: {
+          database: 'healthy',
+          orchestrator: 'healthy',
           auth: 'passed'
         },
-        healthCheckId: writeData.id,
         requestId
       }),
       { status: 200, headers: securityHeaders }
