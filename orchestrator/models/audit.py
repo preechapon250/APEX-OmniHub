@@ -122,9 +122,7 @@ class AuditLogEntry(BaseModel):
     correlation_id: str = Field(..., description="Correlation ID for request tracing")
 
     # Timestamp (Critical for compliance)
-    timestamp: datetime = Field(
-        ..., description="Event timestamp (ISO 8601 with timezone)"
-    )
+    timestamp: datetime = Field(..., description="Event timestamp (ISO 8601 with timezone)")
     event_sequence: int = Field(
         ..., description="Sequence number for ordering within correlation_id"
     )
@@ -150,15 +148,12 @@ class AuditLogEntry(BaseModel):
     )
 
     # Compliance Fields (Required for SOC2/GDPR)
-    data_classification: str = Field(
-        "internal", description="Data classification level"
-    )
+    data_classification: str = Field("internal", description="Data classification level")
     retention_period_days: int = Field(
         2555, description="How long to retain this log (7 years for financial)"
     )
     compliance_frameworks: List[str] = Field(
-        default_factory=lambda: ["soc2", "gdpr"],
-        description="Applicable compliance frameworks"
+        default_factory=lambda: ["soc2", "gdpr"], description="Applicable compliance frameworks"
     )
 
     # Security & Integrity
@@ -176,6 +171,7 @@ class AuditLogEntry(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         use_enum_values = True
         json_encoders = {
             datetime: lambda v: v.isoformat(),
@@ -280,7 +276,7 @@ class AuditLogger:
         resource_type: Optional[AuditResourceType] = None,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[AuditLogEntry]:
         """
         Query audit events for compliance reporting.
@@ -317,7 +313,7 @@ class AuditLogger:
                 return False
 
             if i > 0:
-                if event.previous_hash != events[i-1].integrity_hash:
+                if event.previous_hash != events[i - 1].integrity_hash:
                     return False
 
         return True
@@ -334,7 +330,7 @@ async def log_audit_event(
     resource_id: str,
     status: AuditStatus = AuditStatus.SUCCESS,
     metadata: Optional[AuditMetadata] = None,
-    **kwargs
+    **kwargs,
 ) -> str:
     """
     Convenience function for logging audit events.
