@@ -1,5 +1,7 @@
 """Unit tests for semantic caching with Redis."""
 
+import os
+
 import pytest
 
 from infrastructure.cache import EntityExtractor, SemanticCacheService
@@ -70,18 +72,20 @@ class TestSemanticCacheService:
     @pytest.fixture
     async def cache_service(self):
         """Create cache service instance for testing."""
-        # Use test Redis (or mock if no Redis available)
+        # Use environment variable or default to localhost
+        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
         cache = SemanticCacheService(
-            redis_url="redis://localhost:6379/15",  # Test DB
+            redis_url=redis_url,
             similarity_threshold=0.85,
             ttl_seconds=300,  # 5min for tests
         )
         try:
             await cache.initialize()
             yield cache
-        except Exception:
-            # If Redis not available, skip tests
-            pytest.skip("Redis not available for testing")
+        except Exception as e:
+            # Print error for debugging and skip tests
+            print(f"Redis connection failed: {e}")
+            pytest.skip(f"Redis not available for testing: {e}")
         finally:
             await cache.close()
 
