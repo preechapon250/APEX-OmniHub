@@ -4,28 +4,30 @@ MAN Mode (Manual Assistance Needed) data models.
 This module defines the core data structures for the human-in-the-loop
 safety system that gates high-risk agent actions.
 """
-from enum import Enum
-from typing import Optional, Dict, Any
-from uuid import UUID, uuid4
 from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, Optional
+from uuid import UUID, uuid4
+
 from pydantic import BaseModel, Field
 
 
 class ManLane(str, Enum):
     """Risk classification lanes for action triage.
-    
+
     Inherits from str to ensure proper serialization:
     - str(ManLane.GREEN) returns "GREEN" (not "ManLane.GREEN")
     - JSON serialization returns "GREEN"
     - Pydantic validation accepts string literals
     - Database JSONB stores clean string values
-    
+
     Lanes:
         GREEN: Auto-approve, no human review required
         YELLOW: Log and proceed, monitoring recommended
         RED: Block until human approval received
         BLOCKED: Never allow, immediate denial
     """
+
     GREEN = "GREEN"
     YELLOW = "YELLOW"
     RED = "RED"
@@ -34,9 +36,10 @@ class ManLane(str, Enum):
 
 class ManTaskStatus(str, Enum):
     """Status values for approval tasks.
-    
+
     Inherits from str for consistent serialization behavior.
     """
+
     PENDING = "PENDING"
     APPROVED = "APPROVED"
     DENIED = "DENIED"
@@ -44,7 +47,7 @@ class ManTaskStatus(str, Enum):
 
 class ActionIntent(BaseModel):
     """Action proposed by agent requiring risk evaluation.
-    
+
     Attributes:
         tool_name: Identifier of the tool to execute
         params: Parameters to pass to the tool
@@ -53,6 +56,7 @@ class ActionIntent(BaseModel):
         irreversible: Flag indicating action cannot be undone
         metadata: Additional context for risk evaluation
     """
+
     tool_name: str = Field(..., description="Tool identifier")
     params: Dict[str, Any] = Field(
         default_factory=dict,
@@ -68,14 +72,14 @@ class ActionIntent(BaseModel):
         default_factory=dict,
         description="Additional context"
     )
-    
+
     class Config:
         frozen = True  # Immutable
 
 
 class RiskTriageResult(BaseModel):
     """Output from risk policy evaluation.
-    
+
     Attributes:
         lane: Risk classification (GREEN/YELLOW/RED/BLOCKED)
         reason: Human-readable explanation of classification
@@ -83,6 +87,7 @@ class RiskTriageResult(BaseModel):
         timeout_seconds: Max wait time for approval (default 86400 = 24h)
         metadata: Additional policy evaluation context
     """
+
     lane: ManLane = Field(..., description="Risk classification lane")
     reason: str = Field(..., description="Classification rationale")
     requires_approval: bool = Field(
@@ -103,7 +108,7 @@ class RiskTriageResult(BaseModel):
 
 class ManTaskDecision(BaseModel):
     """Human decision on approval task.
-    
+
     Attributes:
         status: Approval decision (APPROVED/DENIED)
         reason: Human-provided rationale
@@ -111,6 +116,7 @@ class ManTaskDecision(BaseModel):
         decided_at: Timestamp of decision
         metadata: Additional decision context
     """
+
     status: ManTaskStatus = Field(
         ...,
         description="Decision outcome"
@@ -132,10 +138,10 @@ class ManTaskDecision(BaseModel):
 
 class ManTask(BaseModel):
     """Durable approval task record.
-    
+
     Represents a single action awaiting human review.
     Stored in man_tasks database table.
-    
+
     Attributes:
         id: Unique task identifier
         idempotency_key: Prevents duplicate task creation
@@ -145,6 +151,7 @@ class ManTask(BaseModel):
         decision: Human decision (null until decided)
         created_at: Task creation timestamp
     """
+
     id: UUID = Field(default_factory=uuid4, description="Task ID")
     idempotency_key: str = Field(
         ...,
@@ -168,14 +175,14 @@ class ManTask(BaseModel):
 
 def create_idempotency_key(workflow_id: str, step_id: str) -> str:
     """Generate idempotency key for task creation.
-    
+
     Args:
         workflow_id: Parent workflow identifier
         step_id: Step identifier within workflow
-    
+
     Returns:
         Idempotency key in format "{workflow_id}:{step_id}"
-    
+
     Example:
         >>> create_idempotency_key("wf-123", "step-5")
         'wf-123:step-5'
