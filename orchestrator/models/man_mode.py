@@ -8,6 +8,21 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 
 
+class IdempotencyKey(BaseModel):
+    """Unique identifier for deduplicating workflow steps."""
+
+    workflow_id: str
+    step_id: str
+
+    def __hash__(self) -> int:
+        return hash((self.workflow_id, self.step_id))
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, IdempotencyKey):
+            return False
+        return self.workflow_id == other.workflow_id and self.step_id == other.step_id
+
+
 class ManLane(str, Enum):
     """Traffic-light lanes for action risk."""
 
@@ -69,17 +84,3 @@ class ManTask(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     decision: Optional[ManTaskDecision] = None
 
-
-class IdempotencyKey(BaseModel):
-    """Unique identifier for deduplicating workflow steps."""
-
-    workflow_id: str
-    step_id: str
-
-    def __hash__(self) -> int:
-        return hash((self.workflow_id, self.step_id))
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, IdempotencyKey):
-            return False
-        return self.workflow_id == other.workflow_id and self.step_id == other.step_id
