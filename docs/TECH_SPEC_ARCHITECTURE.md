@@ -1,4 +1,4 @@
-# APEX / TradeLine 24/7 — Technical Specification & Architecture
+# APEX / OmniHub — Technical Specification & Architecture
 
 ## Overview
 - Frontend: React 18 + Vite + TypeScript + Tailwind (utility classes), shadcn UI.
