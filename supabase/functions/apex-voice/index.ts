@@ -1,7 +1,26 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const APEX_SYSTEM_PROMPT = `You are APEX, an AI assistant with deep knowledge about APEX internal operations.
+/**
+ * Language name mappings for system prompts
+ */
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  es: 'Spanish',
+  de: 'German',
+  ja: 'Japanese',
+  fr: 'French',
+  pt: 'Portuguese',
+  it: 'Italian',
+};
+
+/**
+ * Generate language-specific system prompt
+ */
+function generateSystemPrompt(language: string = 'en'): string {
+  const languageName = LANGUAGE_NAMES[language] || 'English';
+
+  return `You are APEX, an AI assistant with deep knowledge about APEX internal operations.
 
 Your role is to:
 - Answer questions about internal APEX knowledge, systems, and processes
@@ -15,7 +34,8 @@ Source Priority:
 3. Canva design assets
 4. General knowledge (only when specific sources unavailable)
 
-Keep responses conversational, clear, and helpful.`;
+IMPORTANT: You must speak only in ${languageName}. Be concise and professional. All responses must be in ${languageName} only.`;
+}
 
 serve(async (req) => {
   const { headers } = req;
@@ -25,7 +45,11 @@ serve(async (req) => {
     return new Response("Expected WebSocket connection", { status: 400 });
   }
 
-  console.log("APEX Voice: WebSocket connection initiated");
+  // Read language parameter from query string
+  const url = new URL(req.url);
+  const lang = url.searchParams.get('lang') || 'en';
+
+  console.log(`APEX Voice: WebSocket connection initiated for language: ${lang}`);
 
   const { socket, response } = Deno.upgradeWebSocket(req);
   
@@ -44,12 +68,7 @@ serve(async (req) => {
     
     // Connect to OpenAI Realtime API
     const openAIUrl = `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`;
-    openAISocket = new WebSocket(openAIUrl, {
-      headers: {
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
-        "OpenAI-Beta": "realtime=v1"
-      }
-    });
+    openAISocket = new WebSocket(openAIUrl, ["realtime", `Bearer.${OPENAI_API_KEY}`]);
 
     openAISocket.onopen = () => {
       console.log("APEX Voice: Connected to OpenAI Realtime API");
@@ -69,7 +88,7 @@ serve(async (req) => {
             type: "session.update",
             session: {
               modalities: ["text", "audio"],
-              instructions: APEX_SYSTEM_PROMPT,
+              instructions: generateSystemPrompt(lang),
               voice: "alloy",
               input_audio_format: "pcm16",
               output_audio_format: "pcm16",

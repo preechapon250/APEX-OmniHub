@@ -5,6 +5,7 @@ import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { AudioRecorder, encodeAudioForAPI, playAudioData, clearAudioQueue } from '@/utils/RealtimeAudio';
 import { calculateBackoffDelay } from '@/lib/backoff';
 import { logAnalyticsEvent } from '@/lib/monitoring';
+import { useI18n } from '@/lib/i18n/index';
 
 interface VoiceInterfaceProps {
   onTranscript?: (text: string, isFinal: boolean) => void;
@@ -13,6 +14,7 @@ interface VoiceInterfaceProps {
 
 const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscript, onSpeakingChange }) => {
   const { toast } = useToast();
+  const { locale, t } = useI18n();
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
@@ -31,7 +33,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscript, onSpeakin
   const JITTER_MS = Number(import.meta.env.VITE_VOICE_RETRY_JITTER_MS ?? 250);
   const WS_URL =
     import.meta.env.VITE_VOICE_WS_URL ??
-    `wss://wwajmaohwcbooljdureo.supabase.co/functions/v1/apex-voice`;
+    `wss://wwajmaohwcbooljdureo.supabase.co/functions/v1/apex-voice?lang=${locale}`;
 
   const cleanupTimers = () => {
     if (reconnectTimeoutRef.current) {
@@ -58,11 +60,18 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscript, onSpeakin
     }, 5_000); // Check every 5 seconds
   };
 
-  const cleanupTransport = () => {
-    recorderRef.current?.stop();
-    wsRef.current?.close();
+  // Strict cleanup function that closes WebSocket and stops recorder
+  const cleanup = useCallback(() => {
+    if (recorderRef.current) {
+      recorderRef.current.stop();
+      recorderRef.current = null;
+    }
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
     clearAudioQueue();
-  };
+  }, []);
 
   const handleDegraded = (message: string) => {
     setDegradedMode(true);
@@ -196,7 +205,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscript, onSpeakin
       ws.onerror = (_error) => {
         void logAnalyticsEvent('voice.ws.error', { error: 'WebSocket error' });
         setIsConnecting(false);
-        cleanupTransport();
+        cleanup();
         scheduleReconnect('Voice service unavailable. Retrying...');
         toast({
           title: 'Connection Error',
@@ -215,11 +224,11 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscript, onSpeakin
         }
       };
     } catch (error) {
-      void logAnalyticsEvent('voice.ws.start_error', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      void logAnalyticsEvent('voice.ws.start_error', {
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
       setIsConnecting(false);
-      cleanupTransport();
+      cleanup();
       scheduleReconnect('Voice start failed. Retrying...');
       toast({
         title: 'Error',
@@ -232,7 +241,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscript, onSpeakin
   const endConversation = useCallback(() => {
     userEndedRef.current = true;
     cleanupTimers();
-    cleanupTransport();
+    cleanup();
     audioContextRef.current?.close();
     audioContextRef.current = null;
     recorderRef.current = null;
@@ -241,7 +250,12 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscript, onSpeakin
     setIsConnected(false);
     setIsConnecting(false);
     onSpeakingChange?.(false);
-  }, [onSpeakingChange]);
+  }, [onSpeakingChange, cleanup]);
+
+  // Cleanup on language change
+  useEffect(() => {
+    cleanup();
+  }, [locale, cleanup]);
 
   useEffect(() => {
     return () => {
