@@ -43,7 +43,7 @@ export default tseslint.config(
     },
   },
   // Allow console.log in monitoring/debugging infrastructure (legacy code)
-  // TODO: Migrate these to structured logging
+  // BACKLOG: Migrate to structured logging (tracked in project board)
   {
     files: [
       "src/lib/monitoring.ts",
