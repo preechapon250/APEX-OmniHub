@@ -23,7 +23,7 @@ CREATE POLICY IF NOT EXISTS "Service role only" ON public.app_settings
   FOR ALL USING (false);
 
 -- 2. Migrate existing hardcoded admin emails to app_settings
--- TODO: After deployment, add admin emails via Supabase dashboard or service role
+-- NOTE: POST-DEPLOYMENT ACTION - Add admin emails via Supabase dashboard or service role
 INSERT INTO public.app_settings (key, value)
 VALUES ('admin_emails', '[]'::jsonb)
 ON CONFLICT (key) DO NOTHING;

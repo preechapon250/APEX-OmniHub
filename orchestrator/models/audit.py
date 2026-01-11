@@ -269,29 +269,28 @@ class AuditLogger:
 
     async def query_events(
         self,
-        actor_id: str | None = None,
-        action: AuditAction | None = None,
-        resource_type: AuditResourceType | None = None,
-        start_date: datetime | None = None,
-        end_date: datetime | None = None,
-        limit: int = 100,
+        _actor_id: str | None = None,
+        _action: AuditAction | None = None,
+        _resource_type: AuditResourceType | None = None,
+        _start_date: datetime | None = None,
+        _end_date: datetime | None = None,
+        _limit: int = 100,
     ) -> list[AuditLogEntry]:
         """
         Query audit events for compliance reporting.
 
         Args:
-            actor_id: Filter by actor
-            action: Filter by action type
-            resource_type: Filter by resource type
-            start_date: Start date for query
-            end_date: End date for query
-            limit: Maximum results to return
+            _actor_id: Filter by actor (interface placeholder)
+            _action: Filter by action type (interface placeholder)
+            _resource_type: Filter by resource type (interface placeholder)
+            _start_date: Start date for query (interface placeholder)
+            _end_date: End date for query (interface placeholder)
+            _limit: Maximum results to return (interface placeholder)
 
         Returns:
             List of matching audit events
         """
-        # Implementation would query the audit log storage
-        # This is a placeholder
+        # Interface placeholder - implementation pending
         return []
 
     async def validate_integrity(self, events: list[AuditLogEntry]) -> bool:
