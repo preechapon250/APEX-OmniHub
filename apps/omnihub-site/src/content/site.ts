@@ -3,9 +3,11 @@
  * All copy, proof tiles, and navigation live here for easy updates.
  */
 
+import { getSiteUrl } from '@/lib/site-url';
+
 export const siteConfig = {
   name: 'APEX OmniHub',
-  domain: 'apexomnihub.icu',
+  domain: new URL(getSiteUrl()).hostname,
 
   nav: {
     logo: 'APEX OmniHub',
