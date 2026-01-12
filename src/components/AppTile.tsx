@@ -27,13 +27,15 @@ export const AppTile = ({
 }: AppTileProps) => {
     const isSmall = variant === 'small';
 
-    const containerClasses = [
-        'aspect-square rounded-xl flex flex-col items-center justify-center text-center transition-transform hover:scale-105 cursor-pointer',
-        isSmall ? 'p-4' : 'p-6',
-        app.icon
-            ? `bg-white border-2 border-[hsl(var(--navy))] shadow-lg ${!isSmall ? 'hover:shadow-xl' : ''}`
-            : 'bg-white border-2 border-dashed border-muted-foreground/30'
-    ].join(' ');
+    const baseClasses = 'aspect-square rounded-xl flex flex-col items-center justify-center text-center transition-transform hover:scale-105 cursor-pointer w-full';
+    const paddingClass = isSmall ? 'p-4' : 'p-6';
+
+    let borderShadowClass = 'bg-white border-2 border-dashed border-muted-foreground/30';
+    if (app.icon) {
+        borderShadowClass = `bg-white border-2 border-[hsl(var(--navy))] shadow-lg ${!isSmall ? 'hover:shadow-xl' : ''}`;
+    }
+
+    const containerClasses = [baseClasses, paddingClass, borderShadowClass].join(' ');
 
     const iconClasses = [
         'mb-2 object-cover rounded-lg',
@@ -50,11 +52,6 @@ export const AppTile = ({
         isSmall ? 'text-xs md:text-sm' : 'text-sm md:text-base font-medium'
     ].join(' ');
 
-    const badgeClasses = [
-        'absolute bg-[hsl(var(--navy))] text-white rounded-full shadow-lg animate-pulse',
-        'p-1 -top-1 -right-1', // Small variant defaults (adjust if large is different)
-    ].join(' ');
-
     const handleClick = () => {
         if (app.name === 'APEX' && isInstallable) {
             onInstall();
@@ -66,8 +63,8 @@ export const AppTile = ({
     };
 
     return (
-        <div
-            role="group"
+        <button
+            type="button"
             aria-label={`${app.name} tile`}
             className={containerClasses}
             onClick={handleClick}
@@ -95,6 +92,6 @@ export const AppTile = ({
                     {app.name}
                 </span>
             )}
-        </div>
+        </button>
     );
 };
