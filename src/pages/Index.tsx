@@ -46,17 +46,17 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       {/* Hero Section */}
       <section className="px-4 py-16 md:py-20 lg:py-24 pt-20 md:pt-24 lg:pt-28">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            
+
             {/* Left Column - Content */}
             <div className="max-w-[560px] space-y-6 lg:space-y-8">
               {/* H1 */}
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-[hsl(var(--navy))]">
-                APEX Business Systems, Apps for Life!
+                APEX OmniHub
               </h1>
 
               {/* Support Copy */}
@@ -66,8 +66,8 @@ const Index = () => {
 
               {/* CTA */}
               <div className="pt-2">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   onClick={scrollToApps}
                   className="w-full md:w-auto bg-[hsl(var(--navy))] hover:bg-[hsl(var(--navy-600))] text-white px-8"
                 >
@@ -84,11 +84,10 @@ const Index = () => {
                     key={index}
                     role="group"
                     aria-label={`${app.name} tile`}
-                    className={`aspect-square rounded-xl p-4 flex flex-col items-center justify-center text-center transition-transform hover:scale-105 cursor-pointer ${
-                      app.icon 
-                     ? 'bg-white border-2 border-[hsl(var(--navy))] shadow-lg' 
+                    className={`aspect-square rounded-xl p-4 flex flex-col items-center justify-center text-center transition-transform hover:scale-105 cursor-pointer ${app.icon
+                        ? 'bg-white border-2 border-[hsl(var(--navy))] shadow-lg'
                         : 'bg-white border-2 border-dashed border-muted-foreground/30'
-                    }`}
+                      }`}
                     onClick={() => {
                       if (app.name === 'APEX' && isInstallable) {
                         handlePWAInstall();
@@ -102,8 +101,8 @@ const Index = () => {
                     {app.icon ? (
                       <>
                         <div className="relative">
-                          <img 
-                            src={app.icon} 
+                          <img
+                            src={app.icon}
                             alt={app.alt}
                             className="w-icon-sm h-icon-sm md:w-icon-md md:h-icon-md mb-2 object-cover rounded-lg"
                           />
@@ -142,11 +141,10 @@ const Index = () => {
                 key={index}
                 role="group"
                 aria-label={`${app.name} tile`}
-                className={`aspect-square rounded-xl p-6 flex flex-col items-center justify-center text-center transition-all hover:scale-105 cursor-pointer ${
-                  app.icon 
-                    ? 'bg-white border-2 border-[hsl(var(--navy))] shadow-lg hover:shadow-xl' 
+                className={`aspect-square rounded-xl p-6 flex flex-col items-center justify-center text-center transition-all hover:scale-105 cursor-pointer ${app.icon
+                    ? 'bg-white border-2 border-[hsl(var(--navy))] shadow-lg hover:shadow-xl'
                     : 'bg-white border-2 border-dashed border-muted-foreground/30'
-                }`}
+                  }`}
                 onClick={() => {
                   if (app.name === 'APEX' && isInstallable) {
                     handlePWAInstall();
@@ -160,8 +158,8 @@ const Index = () => {
                 {app.icon ? (
                   <>
                     <div className="relative">
-                      <img 
-                        src={app.icon} 
+                      <img
+                        src={app.icon}
                         alt={app.alt}
                         className="w-icon-lg h-icon-lg md:w-icon-xl md:h-icon-xl mb-3 object-cover rounded-lg"
                       />
