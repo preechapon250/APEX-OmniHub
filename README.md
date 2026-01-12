@@ -260,9 +260,16 @@ npm run dev
 
 # Required - Supabase
 
+# Required - Supabase
+
 VITE_SUPABASE_URL=https://your-project.supabase.co
 
 VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
+
+
+# Required - Site URL (Production)
+
+VITE_SITE_URL=https://apexomnihub.icu
 
  
 
