@@ -22,7 +22,6 @@ export const siteConfig = {
   },
 
   hero: {
-    eyebrow: 'APEX OMNIHUB',
     title: 'Intelligence Designed',
     tagline: 'IT SEES YOU',
     subtitle:
@@ -32,22 +31,22 @@ export const siteConfig = {
   },
 
   highlights: {
-    title: '',
+    title: 'Built for enterprise outcomes—without enterprise friction',
     items: [
       {
-        title: 'Unified Workspace',
+        title: 'Universal Translation Engine',
         description:
-          'Combine tasks, communications, and data in one seamless interface.',
+          'Canonical typed events so platforms actually understand each other — APIs, webhooks, queues, and chains.',
       },
       {
-        title: 'AI-Powered Insights',
+        title: 'Fortress Protocol by default',
         description:
-          'Smart predictions and recommendations to keep you ahead of the curve.',
+          'Assume breach. Verify identity + intent. Least privilege. Receipts, idempotency keys, and audit trails on everything.',
       },
       {
-        title: 'Cross-Platform Sync',
+        title: 'Designed Intelligence',
         description:
-          'Sync across all your devices—desktop, tablet, and mobile.',
+          'Agentic automation with MAN Mode safety gates, deterministic retries, and reversible execution paths.',
       },
     ],
   },
@@ -73,13 +72,13 @@ export const siteConfig = {
   },
 
   showcase: {
-    title: 'Ready for the Future of Productivity?',
-    subtitle: 'Unite. Automate. Excel.',
+    title: 'Ready for the future of execution?',
+    subtitle: 'Unite. Govern. Automate.',
     items: [
-      { title: 'Project Management', image: '/placeholder-project.png' },
-      { title: 'Team Collaboration', image: '/placeholder-team.png' },
-      { title: 'Personal Dashboard', image: '/placeholder-dashboard.png' },
-      { title: 'Workflow Automation', image: '/placeholder-workflow.png' },
+      { title: 'Policy Console', caption: 'Zero-trust policy, RBAC, and audit.' },
+      { title: 'MAN Mode Queue', caption: 'Human approvals without blocking workflows.' },
+      { title: 'Execution Receipts', caption: 'Deterministic replay and proof.' },
+      { title: 'Adapter Registry', caption: 'Portable, modular integrations.' },
     ],
   },
 
