@@ -212,21 +212,6 @@ function MobileDrawer({
               alt="APEX OmniHub"
             />
           </a>
-          <BurgerMenu />
-        </div>
-        <ul className="nav__links">
-          {siteConfig.nav.links.map((link) => (
-            <li key={link.href}>
-              <a href={link.href} className="nav__link">
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <div className="nav__actions">
-          <a href={siteConfig.nav.primaryCta.href} className="btn btn--primary btn--sm nav__cta-desktop">
-            {siteConfig.nav.primaryCta.label}
-          </a>
           <button
             type="button"
             className="drawer__close"
