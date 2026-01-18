@@ -25,7 +25,7 @@ export const Header = () => {
           <img
             src={apexOmniHubWordmark}
             alt="APEX OmniHub"
-            className="h-[calc(61.6px*0.95)] w-auto max-h-[58.5px]"
+            className="h-[58px] w-auto"
           />
         </div>
 
