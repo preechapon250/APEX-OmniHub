@@ -19,59 +19,83 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/ios/icon-180.png" />
     <link rel="apple-touch-icon" sizes="167x167" href="/icons/ios/icon-180.png" />
 
-    <!-- Fallback iOS icon -->
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    
-    <!-- Open Graph / Social -->
-    <meta property="og:title" content="APEX Business Systems — Apps for Life" />
-    <meta property="og:description" content="Unified tools for work and life. Professional business applications and solutions." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://apexbusiness-systems.com/" />
-    <meta property="og:image" content="https://apexbusiness-systems.com/og.png" />
-    
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="APEX Business Systems — Apps for Life" />
-    <meta name="twitter:description" content="Unified tools for work and life." />
-    <meta name="twitter:image" content="https://apexbusiness-systems.com/og.png" />
-    
-    <!-- Security Headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://esm.sh https://cdn.jsdelivr.net https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.lovable.dev https://ai.gateway.lovable.dev https://vercel.live; frame-src 'self' https://vercel.live; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;" />
-    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-Frame-Options" content="DENY" />
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
-    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(self), camera=()" />
-    
-    <!-- Resource Hints -->
-    <link rel="dns-prefetch" href="https://wwajmaohwcbooljdureo.supabase.co" />
-    <link rel="preconnect" href="https://wwajmaohwcbooljdureo.supabase.co" crossorigin />
-  </head>
+<head>
+  <!-- @omnilink/web-head:v1 -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>APEX OmniHub — Intelligence, Designed.</title>
+  <meta name="description"
+    content="APEX OmniHub — The universal translator + orchestrator connecting AI, enterprise systems, and Web3." />
+  <meta name="author" content="APEX Business Systems" />
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- Service Worker Registration -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', async () => {
-          try {
-            const existingRegistration = await navigator.serviceWorker.getRegistration();
-            const hasExpectedWorker = existingRegistration?.active?.scriptURL?.endsWith('/sw.js');
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/apex-omnihub-icon.png" type="image/png" />
+  <link rel="alternate icon" href="/favicon.png" type="image/png" />
+  <meta name="theme-color" content="#000000" />
+  <!-- iOS App Icons -->
+  <link rel="apple-touch-icon" href="/icons/ios/icon-120.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/ios/icon-152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/ios/icon-180.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="/icons/ios/icon-180.png" />
 
-            if (!existingRegistration || !hasExpectedWorker) {
-              await navigator.serviceWorker.register('/sw.js');
-              console.log('✅ Service Worker registered');
-            } else {
-              await existingRegistration.update();
-              console.log('✅ Service Worker already registered');
-            }
-          } catch (err) {
-            console.log('❌ Service Worker registration failed:', err);
+  <!-- Fallback iOS icon -->
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:title" content="APEX OmniHub — Intelligence, Designed." />
+  <meta property="og:description"
+    content="The universal translator + orchestrator connecting AI, enterprise, and Web3." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://apexomnihub.icu/" />
+  <meta property="og:image" content="https://apexomnihub.icu/og.png" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="APEX OmniHub — Intelligence, Designed." />
+  <meta name="twitter:description"
+    content="The universal translator + orchestrator connecting AI, enterprise, and Web3." />
+  <meta name="twitter:image" content="https://apexomnihub.icu/og.png" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' https://esm.sh https://cdn.jsdelivr.net https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.lovable.dev https://ai.gateway.lovable.dev https://vercel.live; frame-src 'self' https://vercel.live; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(self), camera=()" />
+
+  <!-- Resource Hints -->
+  <link rel="dns-prefetch" href="https://wwajmaohwcbooljdureo.supabase.co" />
+  <link rel="preconnect" href="https://wwajmaohwcbooljdureo.supabase.co" crossorigin />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const existingRegistration = await navigator.serviceWorker.getRegistration();
+          const hasExpectedWorker = existingRegistration?.active?.scriptURL?.endsWith('/sw.js');
+
+          if (!existingRegistration || !hasExpectedWorker) {
+            await navigator.serviceWorker.register('/sw.js');
+            console.log('✅ Service Worker registered');
+          } else {
+            await existingRegistration.update();
+            console.log('✅ Service Worker already registered');
           }
-        });
-      }
-    </script>
-  </body>
+        } catch (err) {
+          console.log('❌ Service Worker registration failed:', err);
+        }
+      });
+    }
+  </script>
+</body>
+
 </html>
