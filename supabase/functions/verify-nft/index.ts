@@ -32,21 +32,11 @@
  * Date: 2026-01-01
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { createPublicClient, http } from 'https://esm.sh/viem@2.43.4';
 import { polygon, mainnet } from 'https://esm.sh/viem@2.43.4/chains';
-
-// CORS headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-};
-
-// Rate limiting configuration
-const VERIFY_NFT_RATE_LIMIT_MAX = 30;
-const VERIFY_NFT_RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
-const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+import { handleCors, corsJsonResponse } from '../_shared/cors.ts';
+import { checkRateLimit, RATE_LIMITS } from '../_shared/rate-limiting.ts';
+import { createSupabaseClient, authenticateUser, createAuthErrorResponse, createMethodNotAllowedResponse, createInternalErrorResponse } from '../_shared/auth.ts';
 
 // Cache configuration
 const NFT_VERIFICATION_CACHE_MS = 5 * 60 * 1000; // 5 minutes
@@ -63,29 +53,7 @@ const ERC721_BALANCE_OF_ABI = [
   },
 ] as const;
 
-/**
- * Check rate limit for user
- */
-function checkRateLimit(userId: string): { allowed: boolean; remaining: number; resetIn: number } {
-  const now = Date.now();
-  const key = `verify-nft:${userId}`;
 
-  const record = rateLimitStore.get(key);
-
-  if (!record || now >= record.resetAt) {
-    rateLimitStore.set(key, { count: 1, resetAt: now + VERIFY_NFT_RATE_LIMIT_WINDOW_MS });
-    return { allowed: true, remaining: VERIFY_NFT_RATE_LIMIT_MAX - 1, resetIn: VERIFY_NFT_RATE_LIMIT_WINDOW_MS };
-  }
-
-  if (record.count >= VERIFY_NFT_RATE_LIMIT_MAX) {
-    return { allowed: false, remaining: 0, resetIn: record.resetAt - now };
-  }
-
-  record.count++;
-  rateLimitStore.set(key, record);
-
-  return { allowed: true, remaining: VERIFY_NFT_RATE_LIMIT_MAX - record.count, resetIn: record.resetAt - now };
-}
 
 /**
  * Get cached verification result if still valid
@@ -169,94 +137,71 @@ async function verifyNFTOwnership(walletAddress: string): Promise<{ balance: num
  */
 Deno.serve(async (req) => {
   // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders, status: 204 });
-  }
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   // Only allow GET requests
   if (req.method !== 'GET') {
-    return new Response(
-      JSON.stringify({ error: 'method_not_allowed', message: 'Only GET requests are allowed' }),
-      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return createMethodNotAllowedResponse(['GET']);
   }
 
   try {
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createSupabaseClient();
 
     // Get authenticated user from JWT
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'unauthorized', message: 'Authentication required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const authResult = await authenticateUser(req.headers.get('Authorization'), supabase);
+    if (!authResult.success) {
+      return createAuthErrorResponse(authResult.error!);
     }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'unauthorized', message: 'Invalid or expired session' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { user } = authResult;
 
     // Check rate limit
-    const rateLimit = checkRateLimit(user.id);
+    const rateLimit = checkRateLimit(user!.id, RATE_LIMITS.NFT_VERIFY);
     if (!rateLimit.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: 'rate_limit_exceeded',
-          message: `Too many verification requests. Try again in ${Math.ceil(rateLimit.resetIn / 1000)} seconds.`,
-          retry_after: Math.ceil(rateLimit.resetIn / 1000),
-        }),
-        {
-          status: 429,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-            'Retry-After': Math.ceil(rateLimit.resetIn / 1000).toString(),
-          },
-        }
-      );
+      // For NFT verification, we don't return rate limit errors to avoid exposing rate limiting
+      // Instead, return a cached-like response to maintain privacy
+      return corsJsonResponse({
+        hasPremiumNFT: false,
+        wallet_address: null,
+        nft_balance: 0,
+        verified_at: new Date().toISOString(),
+        cached: false,
+        error: 'rate_limited',
+      });
     }
 
     // Get user's verified wallet address
     const { data: walletIdentity, error: walletError } = await supabase
       .from('wallet_identities')
       .select('wallet_address')
-      .eq('user_id', user.id)
+      .eq('user_id', user!.id)
       .order('verified_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (walletError) {
       console.error('Error fetching wallet identity:', walletError);
-      return new Response(
-        JSON.stringify({ error: 'database_error', message: 'Failed to fetch wallet information' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({
+        hasPremiumNFT: false,
+        wallet_address: null,
+        nft_balance: 0,
+        verified_at: new Date().toISOString(),
+        cached: false,
+        error: 'database_error',
+      });
     }
 
     if (!walletIdentity) {
       // User has no verified wallet - no NFT
-      return new Response(
-        JSON.stringify({
-          hasPremiumNFT: false,
-          wallet_address: null,
-          nft_balance: 0,
-          verified_at: new Date().toISOString(),
-          cached: false,
-          reason: 'no_verified_wallet',
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({
+        hasPremiumNFT: false,
+        wallet_address: null,
+        nft_balance: 0,
+        verified_at: new Date().toISOString(),
+        cached: false,
+        reason: 'no_verified_wallet',
+      });
     }
 
     const walletAddress = walletIdentity.wallet_address;
@@ -264,16 +209,13 @@ Deno.serve(async (req) => {
     // Check cache first
     const cached = getCachedVerification(walletAddress);
     if (cached) {
-      return new Response(
-        JSON.stringify({
-          hasPremiumNFT: cached.hasPremiumNFT,
-          wallet_address: walletAddress,
-          nft_balance: cached.balance,
-          verified_at: new Date().toISOString(),
-          cached: true,
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({
+        hasPremiumNFT: cached.hasPremiumNFT,
+        wallet_address: walletAddress,
+        nft_balance: cached.balance,
+        verified_at: new Date().toISOString(),
+        cached: true,
+      });
     }
 
     // Verify NFT ownership via blockchain
@@ -290,18 +232,14 @@ Deno.serve(async (req) => {
     } catch (error) {
       console.error('NFT verification failed:', error);
       // Fail-safe: return false on verification errors
-      // Don't expose internal errors to client
-      return new Response(
-        JSON.stringify({
-          hasPremiumNFT: false,
-          wallet_address: walletAddress,
-          nft_balance: 0,
-          verified_at: new Date().toISOString(),
-          cached: false,
-          error: 'verification_failed',
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({
+        hasPremiumNFT: false,
+        wallet_address: walletAddress,
+        nft_balance: 0,
+        verified_at: new Date().toISOString(),
+        cached: false,
+        error: 'verification_failed',
+      });
     }
 
     // Update user profile with NFT status
@@ -311,33 +249,27 @@ Deno.serve(async (req) => {
         has_premium_nft: hasPremiumNFT,
         nft_verified_at: new Date().toISOString(),
       })
-      .eq('id', user.id);
+      .eq('id', user!.id);
 
     // Return success response
-    return new Response(
-      JSON.stringify({
-        hasPremiumNFT,
-        wallet_address: walletAddress,
-        nft_balance: balance,
-        verified_at: new Date().toISOString(),
-        cached: false,
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return corsJsonResponse({
+      hasPremiumNFT,
+      wallet_address: walletAddress,
+      nft_balance: balance,
+      verified_at: new Date().toISOString(),
+      cached: false,
+    });
 
   } catch (error) {
     console.error('Unexpected error in verify-nft function:', error);
     // Fail-safe: always return false on errors
-    return new Response(
-      JSON.stringify({
-        hasPremiumNFT: false,
-        wallet_address: null,
-        nft_balance: 0,
-        verified_at: new Date().toISOString(),
-        cached: false,
-        error: 'internal_error',
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return corsJsonResponse({
+      hasPremiumNFT: false,
+      wallet_address: null,
+      nft_balance: 0,
+      verified_at: new Date().toISOString(),
+      cached: false,
+      error: 'internal_error',
+    });
   }
 });

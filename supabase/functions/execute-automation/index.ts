@@ -1,30 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { createSupabaseClient } from '../_shared/auth.ts';
+import { handleCors, corsJsonResponse } from '../_shared/cors.ts';
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS preflight
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createSupabaseClient();
 
     const body = await req.json();
     const { automationId } = body;
 
     // Validate automationId
     if (!automationId || typeof automationId !== 'string' || automationId.trim().length === 0) {
-      return new Response(JSON.stringify({ error: 'Invalid automationId' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return corsJsonResponse({ error: 'Invalid automationId' }, 400);
     }
 
     // Fetch automation
@@ -36,10 +27,7 @@ serve(async (req) => {
 
     if (fetchError) throw fetchError;
     if (!automation.is_active) {
-      return new Response(JSON.stringify({ error: 'Automation is not active' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return corsJsonResponse({ error: 'Automation is not active' }, 400);
     }
 
     // Execute based on action_type
@@ -67,15 +55,10 @@ serve(async (req) => {
       .update({ updated_at: new Date().toISOString() })
       .eq('id', automationId);
 
-    return new Response(JSON.stringify({ success: true, result }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return corsJsonResponse({ success: true, result });
   } catch (error) {
     console.error('Automation execution error:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return corsJsonResponse({ error: error instanceof Error ? error.message : 'Unknown error' }, 500);
   }
 });
 
