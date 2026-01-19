@@ -83,8 +83,8 @@ function Nav() {
   return (
     <nav className="nav">
       <div className="container nav__inner">
-        <a href="/" className="nav__logo">
-          {siteConfig.nav.logo}
+        <a href="/" className="nav__logo" aria-label="APEX OmniHub">
+          <img src="/apex-badge.svg" alt="APEX OmniHub" className="h-8 w-auto" />
         </a>
         <ul className="nav__links">
           {siteConfig.nav.links.map((link) => (

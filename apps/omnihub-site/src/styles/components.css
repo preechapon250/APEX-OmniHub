@@ -644,3 +644,14 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Ensure secondary buttons are visible on navy sections */
+.section--navy .btn--secondary {
+  color: currentColor;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.section--navy .btn--secondary:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.70);
+}
