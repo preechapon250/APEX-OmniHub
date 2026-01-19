@@ -15,6 +15,7 @@ export const siteConfig = {
       { label: 'Demo', href: '/demo.html' },
       { label: 'Tech Specs', href: '/tech-specs.html' },
       { label: 'Request Access', href: '/request-access.html' },
+      { label: 'Login', href: '/login' },
     ],
   },
 
@@ -237,23 +238,8 @@ export const requestAccessConfig = {
   },
 } as const;
 
-/**
- * Restricted page content
- */
-export const restrictedConfig = {
-  title: 'Restricted',
-  subtitle: 'This area requires authorization',
-  message: 'Access to this section is limited. You have options:',
-  actions: [
-    { label: 'Request Access', href: '/request-access.html', primary: true },
-    { label: 'Watch Demo', href: '/demo.html', primary: false },
-    { label: 'Read Tech Specs', href: '/tech-specs.html', primary: false },
-  ],
-} as const;
-
 export type SiteConfig = typeof siteConfig;
 export type ProofConfig = typeof proofConfig;
 export type TechSpecsConfig = typeof techSpecsConfig;
 export type DemoConfig = typeof demoConfig;
 export type RequestAccessConfig = typeof requestAccessConfig;
-export type RestrictedConfig = typeof restrictedConfig;
