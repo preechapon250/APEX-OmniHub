@@ -28,7 +28,7 @@ import asyncio
 import json
 import os
 import time
-from typing import Any, Optional
+from typing import Any
 from uuid import uuid4
 
 import instructor
@@ -36,8 +36,9 @@ from litellm import acompletion
 from pydantic import BaseModel
 from temporalio import activity
 
-from models.audit import AuditAction, AuditResourceType, AuditStatus, log_audit_event
-from providers.database.factory import get_database_provider
+from ..models.audit import AuditAction, AuditResourceType, AuditStatus, log_audit_event
+from ..providers.database.factory import get_database_provider
+from ..security.prompt_sanitizer import PromptInjectionError, create_safe_user_message
 
 # Global service instances (initialized in setup_activities())
 _semantic_cache = None  # SemanticCacheService instance
@@ -88,7 +89,7 @@ async def setup_activities(
 
 
 @activity.defn(name="check_semantic_cache")
-async def check_semantic_cache(goal: str) -> Optional[dict[str, Any]]:
+async def check_semantic_cache(goal: str) -> dict[str, Any] | None:
     """
     Check semantic cache for existing plan template.
 
@@ -125,8 +126,8 @@ class PlanStep(BaseModel):
     tool: str
     input: dict[str, Any]
     depends_on: list[str] = []
-    compensation: Optional[str] = None
-    compensation_input: Optional[dict[str, Any]] = None
+    compensation: str | None = None
+    compensation_input: dict[str, Any] | None = None
 
 
 class GeneratedPlan(BaseModel):
@@ -168,7 +169,13 @@ Rules:
 1. Break goal into sequential steps (each step = one tool call)
 2. Define dependencies (steps that must complete before this one)
 3. Assign compensation activities for reversible actions
-4. Use available tools: search_database, send_email, book_flight, create_record, webhook
+4. Use available tools:
+   - search_database
+   - send_email
+   - book_flight
+   - create_record
+   - webhook
+   - search_youtube
 
 Example:
 Goal: "Book flight to Paris tomorrow and send confirmation to john@example.com"
@@ -183,11 +190,24 @@ Output valid JSON matching the PlanStep schema."""
     client = instructor.from_litellm(acompletion)
 
     try:
+        # SECURITY: Sanitize user input to prevent prompt injection
+        # CVE fix: Never interpolate raw user input into prompts
+        try:
+            safe_user_message = create_safe_user_message(goal, context)
+        except PromptInjectionError as e:
+            activity.logger.warning(f"Prompt injection blocked: {e.pattern}")
+            from temporalio.exceptions import ApplicationError
+
+            raise ApplicationError(
+                "Request rejected: potential prompt injection detected",
+                non_retryable=True,  # Don't retry injection attempts
+            ) from e
+
         plan = await client.chat.completions.create(
             model=os.getenv("DEFAULT_LLM_MODEL", "gpt-4-turbo-preview"),
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Goal: {goal}\nContext: {json.dumps(context)}"},
+                {"role": "user", "content": safe_user_message},
             ],
             response_model=GeneratedPlan,
             temperature=float(os.getenv("DEFAULT_LLM_TEMPERATURE", "0.0")),
@@ -504,6 +524,35 @@ async def call_webhook(params: dict[str, Any]) -> dict[str, Any]:
             "status_code": response.status_code,
             "body": response.text,
         }
+
+
+@activity.defn(name="search_youtube")
+async def search_youtube(params: dict[str, Any]) -> dict[str, Any]:
+    """
+    Search YouTube for videos.
+
+    Args:
+        params: {
+            "query": "funny cats"
+        }
+
+    Returns:
+        List of videos
+    """
+    query = params.get("query")
+    activity.logger.info(f"Searching YouTube for: {query}")
+
+    # Mock response
+    return {
+        "success": True,
+        "videos": [
+            {
+                "title": f"Video about {query}",
+                "url": "https://youtube.com/watch?v=mock123",
+                "description": "A very interesting video",
+            }
+        ],
+    }
 
 
 # ============================================================================

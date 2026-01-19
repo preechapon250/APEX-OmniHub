@@ -5,8 +5,9 @@
  * Wraps Supabase client with generic database interface
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/integrations/supabase/types'
+import { createSupabaseClient } from '@/lib/supabase/client'
 import type {
   IDatabase,
   QueryFilter,
@@ -32,26 +33,19 @@ export class SupabaseDatabase implements IDatabase {
   }) {
     const key = options.serviceRoleKey || options.apiKey
 
-    this.client = createClient<Database>(options.url, key, {
-      auth: {
-        storage: typeof window !== 'undefined' ? localStorage : undefined,
-        persistSession: true,
-        autoRefreshToken: true,
-      },
-    })
-
     this.debug = options.debug || false
-
-    if (this.debug) {
-      console.log('[SupabaseDatabase] Initialized with URL:', options.url)
-    }
+    this.client = createSupabaseClient({
+      url: options.url,
+      apiKey: key,
+      debug: this.debug,
+    })
   }
 
   // -------------------------------------------------------------------------
   // HELPER: Apply filters to query
   // -------------------------------------------------------------------------
 
-  private applyFilters<T>(query: any, filters?: QueryFilter[]) {
+  private applyFilters<T>(query: unknown, filters?: QueryFilter[]) {
     if (!filters || filters.length === 0) return query
 
     let modifiedQuery = query
@@ -100,7 +94,7 @@ export class SupabaseDatabase implements IDatabase {
   // HELPER: Apply query options
   // -------------------------------------------------------------------------
 
-  private applyOptions<T>(query: any, options?: QueryOptions) {
+  private applyOptions<T>(query: unknown, options?: QueryOptions) {
     let modifiedQuery = query
 
     // Apply filters
@@ -267,7 +261,7 @@ export class SupabaseDatabase implements IDatabase {
     try {
       const { data: result, error } = await this.client
         .from(table)
-        .insert(data as any)
+        .insert(data as unknown)
         .select()
         .single()
 
@@ -291,7 +285,7 @@ export class SupabaseDatabase implements IDatabase {
     try {
       const { data: result, error } = await this.client
         .from(table)
-        .insert(data as any[])
+        .insert(data as unknown[])
         .select()
 
       if (error) {
@@ -313,7 +307,7 @@ export class SupabaseDatabase implements IDatabase {
     options?: { filters?: QueryFilter[] }
   ): Promise<DatabaseListResult<T>> {
     try {
-      let query = this.client.from(table).update(data as any)
+      let query = this.client.from(table).update(data as unknown)
 
       if (options?.filters) {
         query = this.applyFilters(query, options.filters)
@@ -342,7 +336,7 @@ export class SupabaseDatabase implements IDatabase {
     try {
       const { data: result, error } = await this.client
         .from(table)
-        .update(data as any)
+        .update(data as unknown)
         .eq('id', id)
         .select()
         .single()
@@ -426,7 +420,7 @@ export class SupabaseDatabase implements IDatabase {
     try {
       // Supabase doesn't have direct raw SQL API in client library
       // Use RPC function as workaround
-      const { data, error } = await this.client.rpc('execute_sql' as any, {
+      const { data, error } = await this.client.rpc('execute_sql' as unknown, {
         query_text: query,
         query_params: params || [],
       })
@@ -612,7 +606,7 @@ export class SupabaseDatabase implements IDatabase {
             // Apply filters client-side (limitation of Supabase realtime)
             if (options?.filters && options.filters.length > 0) {
               const matches = options.filters.every(filter => {
-                const value = (record as any)[filter.column]
+                const value = (record as unknown)[filter.column]
                 switch (filter.operator) {
                   case '=':
                     return value === filter.value

@@ -140,6 +140,9 @@ Deno.serve(async (req) => {
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
 
+  const requestOrigin = req.headers.get('origin');
+  const corsHeaders = buildCorsHeaders(requestOrigin);
+
   // Only allow GET requests
   if (req.method !== 'GET') {
     return createMethodNotAllowedResponse(['GET']);

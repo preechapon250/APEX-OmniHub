@@ -1,4 +1,4 @@
-project_id = "wwajmaohwcbooljdureo"
+project_id = "rtopreovkywofgwgmozi"
 
 # Auth configuration
 [auth]
@@ -7,6 +7,9 @@ enable_signup = true
 # Enable Web3 authentication providers
 [auth.external.ethereum]
 enabled = true
+client_id = "env(ETHEREUM_CLIENT_ID)"
+secret = "env(ETHEREUM_CLIENT_SECRET)"
+# Note: For demo/CI mode, set ETHEREUM_CLIENT_ID=demo and ETHEREUM_CLIENT_SECRET=demo
 
 [auth.external.solana]
 enabled = false  # Enable when Solana support is needed
@@ -44,7 +47,7 @@ verify_jwt = false
 verify_jwt = false  # Public endpoint to generate nonce for wallet signature
 
 [functions.web3-verify]
-verify_jwt = false  # Public endpoint to verify wallet signature and create session
+verify_jwt = true  # Requires JWT for wallet signature verification
 
 [functions.verify-nft]
 verify_jwt = true  # Requires authenticated user to check NFT ownership

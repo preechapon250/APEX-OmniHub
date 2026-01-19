@@ -4,27 +4,12 @@ This module defines the core data structures for the human-in-the-loop
 safety system that gates high-risk agent actions.
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
-
-
-class IdempotencyKey(BaseModel):
-    """Unique identifier for deduplicating workflow steps."""
-
-    workflow_id: str
-    step_id: str
-
-    def __hash__(self) -> int:
-        return hash((self.workflow_id, self.step_id))
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, IdempotencyKey):
-            return False
-        return self.workflow_id == other.workflow_id and self.step_id == other.step_id
 
 
 class ManLane(str, Enum):
@@ -70,7 +55,7 @@ class ActionIntent(BaseModel):
     workflow_id: str = Field(..., description="Parent workflow ID")
     step_id: str = Field(default="", description="Unique step identifier")
     irreversible: bool = Field(default=False, description="Action cannot be reversed")
-    context: Optional[dict[str, Any]] = Field(default=None, description="Additional context")
+    context: dict[str, Any] | None = Field(default=None, description="Additional context")
 
     model_config = {"frozen": True}
 
@@ -105,31 +90,59 @@ class ManTaskDecision(BaseModel):
     """
 
     status: ManTaskStatus = Field(..., description="Decision outcome")
-    reason: Optional[str] = Field(default=None, description="Decision rationale")
+    reason: str | None = Field(default=None, description="Decision rationale")
     decided_by: str = Field(default="unknown", description="Decision maker identity")
-    decided_at: datetime = Field(default_factory=datetime.utcnow, description="Decision timestamp")
-    metadata: Optional[dict[str, Any]] = Field(default=None, description="Additional context")
+    decided_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC), description="Decision timestamp"
+    )
+    metadata: dict[str, Any] | None = Field(default=None, description="Additional context")
 
 
 class ManTask(BaseModel):
-    """A pending MAN-mode approval ticket."""
+    """Durable approval task record.
 
-    task_id: UUID = Field(default_factory=uuid4)
-    intent: ActionIntent
-    triage: RiskTriageResult
-    status: ManTaskStatus = ManTaskStatus.PENDING
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    decision: Optional[ManTaskDecision] = None
+    Represents a single action awaiting human review.
+    Stored in man_tasks database table.
+
+    Attributes:
+        id: Unique task identifier
+        idempotency_key: Prevents duplicate task creation
+        workflow_id: Parent workflow identifier
+        step_id: Step identifier within workflow
+        status: Current task state (PENDING/APPROVED/DENIED)
+        intent: Original action requiring approval
+        triage_result: Risk triage result
+        decision: Human decision (null until decided)
+        created_at: Task creation timestamp
+    """
+
+    id: UUID = Field(default_factory=uuid4, description="Task ID")
+    idempotency_key: str = Field(..., description="Unique key for idempotent creation")
+    workflow_id: str = Field(..., description="Parent workflow ID")
+    step_id: str = Field(default="", description="Step identifier")
+    status: ManTaskStatus = Field(default=ManTaskStatus.PENDING, description="Task status")
+    intent: ActionIntent = Field(..., description="Proposed action")
+    triage_result: RiskTriageResult | None = Field(default=None, description="Risk triage result")
+    decision: ManTaskDecision | None = Field(
+        default=None, description="Human decision (null until decided)"
+    )
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC), description="Creation timestamp"
+    )
 
 
 def create_idempotency_key(workflow_id: str, step_id: str) -> str:
-    """Create an idempotency key from workflow and step IDs.
+    """Generate idempotency key for task creation.
 
     Args:
-        workflow_id: The workflow identifier
-        step_id: The step identifier within the workflow
+        workflow_id: Parent workflow identifier
+        step_id: Step identifier within workflow
 
     Returns:
-        A string key in format "workflow_id:step_id"
+        Idempotency key in format "{workflow_id}:{step_id}"
+
+    Example:
+        >>> create_idempotency_key("wf-123", "step-5")
+        'wf-123:step-5'
     """
     return f"{workflow_id}:{step_id}"

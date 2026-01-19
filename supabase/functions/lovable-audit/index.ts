@@ -1,9 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-user-id',
-};
+import { buildCorsHeaders, handlePreflight } from "../_shared/cors.ts";
+import { createAnonClient, createServiceClient } from "../_shared/supabaseClient.ts";
 
 interface AuditEventPayload {
   id: string;
@@ -19,18 +15,12 @@ interface AuditEventEnvelope {
   event: AuditEventPayload;
 }
 
-function getSupabaseClient() {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-  return createClient(supabaseUrl, supabaseServiceKey);
-}
-
 /**
  * Write audit event directly to Supabase audit_logs table
  * Replaces Lovable API dependency
  */
 async function writeAuditEvent(payload: AuditEventPayload): Promise<void> {
-  const supabase = getSupabaseClient();
+  const supabase = createServiceClient();
   const { error } = await supabase.from('audit_logs').insert({
     id: payload.id,
     actor_id: payload.actorId || null,
@@ -46,7 +36,7 @@ async function writeAuditEvent(payload: AuditEventPayload): Promise<void> {
   }
 }
 
-function unauthorized(): Response {
+function unauthorized(corsHeaders: HeadersInit): Response {
   return new Response(JSON.stringify({ error: 'unauthorized' }), {
     status: 401,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -54,9 +44,11 @@ function unauthorized(): Response {
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req.headers.get('origin'));
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handlePreflight(req);
   }
 
   if (req.method !== 'POST') {
@@ -71,19 +63,15 @@ Deno.serve(async (req) => {
     if (!userId) {
       const authHeader = req.headers.get('Authorization');
       if (authHeader) {
-        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-        const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-        const supabase = createClient(supabaseUrl, supabaseKey, {
-          global: { headers: { Authorization: authHeader } },
-        });
+        const supabase = createAnonClient(authHeader);
         const { data: { user } } = await supabase.auth.getUser();
         if (user?.id) {
           userId = user.id;
         } else {
-          return unauthorized();
+          return unauthorized(corsHeaders);
         }
       } else {
-        return unauthorized();
+        return unauthorized(corsHeaders);
       }
     }
 
@@ -111,6 +99,5 @@ Deno.serve(async (req) => {
     );
   }
 });
-
 
 

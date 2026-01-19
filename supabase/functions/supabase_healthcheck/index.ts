@@ -1,9 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-request-id',
-};
+import { buildCorsHeaders, handlePreflight } from "../_shared/cors.ts";
 
 // Enhanced rate limiting with cleanup
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -48,11 +44,12 @@ function generateRequestId(): string {
 Deno.serve(async (req) => {
   const requestId = generateRequestId();
   const startTime = Date.now();
-  
+  const corsHeaders = buildCorsHeaders(req.headers.get('origin'));
+
   console.log(`[${requestId}] Health check started`);
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handlePreflight(req);
   }
 
   try {
@@ -68,31 +65,29 @@ Deno.serve(async (req) => {
     const userId = authData?.user?.id;
 
     // Rate limiting check
-    if (userId) {
-      const rateCheck = checkRateLimit(userId);
-      if (!rateCheck.allowed) {
-        const retryAfter = Math.ceil((rateCheck.resetAt - Date.now()) / 1000);
-        console.warn(`[${requestId}] Rate limit exceeded for user ${userId}`);
-        
-        return new Response(
-          JSON.stringify({ 
-            error: 'Rate limit exceeded. Try again later.',
-            retryAfter 
-          }),
-          { 
-            status: 429, 
-            headers: { 
-              ...corsHeaders, 
-              'Content-Type': 'application/json',
-              'X-RateLimit-Limit': RATE_LIMIT.maxRequests.toString(),
-              'X-RateLimit-Remaining': '0',
-              'X-RateLimit-Reset': new Date(rateCheck.resetAt).toISOString(),
-              'Retry-After': retryAfter.toString(),
-              'X-Request-ID': requestId
-            } 
+    const rateCheck = checkRateLimit(userId ?? 'anonymous');
+    if (!rateCheck.allowed) {
+      const retryAfter = Math.ceil((rateCheck.resetAt - Date.now()) / 1000);
+      console.warn(`[${requestId}] Rate limit exceeded for user ${userId ?? 'anonymous'}`);
+
+      return new Response(
+        JSON.stringify({
+          error: 'Rate limit exceeded. Try again later.',
+          retryAfter
+        }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            'X-RateLimit-Limit': RATE_LIMIT.maxRequests.toString(),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(rateCheck.resetAt).toISOString(),
+            'Retry-After': retryAfter.toString(),
+            'X-Request-ID': requestId
           }
-        );
-      }
+        }
+      );
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey, {
@@ -100,17 +95,6 @@ Deno.serve(async (req) => {
         headers: authHeader ? { Authorization: authHeader } : {},
       },
     });
-
-    if (!userId) {
-      return new Response(
-        JSON.stringify({ 
-          status: 'error', 
-          test: 'auth',
-          error: 'Not authenticated' 
-        }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
     // Test 1: Database health - lightweight query to emergency_controls table
     const { error: dbError } = await supabase

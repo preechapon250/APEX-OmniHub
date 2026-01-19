@@ -52,11 +52,11 @@ function extractNonceFromMessage(message: string): string | null {
  * Log audit event
  */
 async function logAuditEvent(
-  supabase: any,
+  supabase: unknown,
   userId: string,
   action: string,
   walletAddress: string,
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 ) {
   try {
     await supabase.from('audit_logs').insert({
@@ -77,6 +77,9 @@ async function logAuditEvent(
  * Main request handler
  */
 Deno.serve(async (req) => {
+  const requestOrigin = req.headers.get('origin')?.replace(/\/$/, '') ?? null;
+  const corsHeaders = buildCorsHeaders(requestOrigin);
+
   // Handle CORS preflight
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
@@ -154,19 +157,92 @@ Deno.serve(async (req) => {
       return corsJsonResponse({ error: 'invalid_message', message: 'Message does not contain a valid nonce' }, 400);
     }
 
+    if (!siweMessage.domain || !siweMessage.uri) {
+      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+        reason: 'missing_siwe_fields',
+      });
+
+      return new Response(
+        JSON.stringify({ error: 'invalid_message', message: 'Missing required SIWE fields' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    let messageOrigin: string;
+    try {
+      messageOrigin = resolveOriginFromUri(siweMessage.uri);
+    } catch {
+      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+        reason: 'invalid_siwe_uri',
+      });
+
+      return new Response(
+        JSON.stringify({ error: 'invalid_message', message: 'SIWE uri must be a valid URL' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const expectedDomain = new URL(siweMessage.uri).host;
+    if (siweMessage.domain !== expectedDomain) {
+      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+        reason: 'siwe_domain_mismatch',
+      });
+
+      return new Response(
+        JSON.stringify({ error: 'invalid_message', message: 'SIWE domain mismatch' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (requestOrigin && requestOrigin !== messageOrigin) {
+      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+        reason: 'origin_mismatch',
+      });
+
+      return new Response(
+        JSON.stringify({ error: 'invalid_message', message: 'Origin does not match SIWE uri' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!isOriginAllowed(messageOrigin)) {
+      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+        reason: 'origin_not_allowed',
+      });
+
+      return new Response(
+        JSON.stringify({ error: 'forbidden', message: 'Origin not allowed' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!siweMessage.chainId || siweMessage.chainId !== resolvedChainId) {
+      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+        reason: 'chain_id_mismatch',
+        chain_id: resolvedChainId,
+        message_chain_id: siweMessage.chainId,
+      });
+
+      return new Response(
+        JSON.stringify({ error: 'invalid_message', message: 'SIWE chainId mismatch' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Verify nonce exists, is unused, and not expired
     const { data: nonceRecord, error: nonceError } = await supabase
       .from('wallet_nonces')
       .select('*')
-      .eq('nonce', nonce)
+      .eq('nonce', messageNonce)
       .eq('wallet_address', normalizedAddress)
+      .eq('chain_id', resolvedChainId)
       .is('used_at', null)
       .maybeSingle();
 
     if (nonceError || !nonceRecord) {
       await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'nonce_not_found',
-        nonce,
+        nonce: messageNonce,
       });
 
       return corsJsonResponse({ error: 'invalid_nonce', message: 'Nonce not found or already used' }, 400);
@@ -177,14 +253,47 @@ Deno.serve(async (req) => {
     if (expiresAt < new Date()) {
       await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'nonce_expired',
-        nonce,
+        nonce: messageNonce,
         expires_at: nonceRecord.expires_at,
       });
 
       return corsJsonResponse({ error: 'nonce_expired', message: 'Nonce has expired, please request a new one' }, 400);
     }
 
-    // Verify signature using viem - support both personal_sign and typedData
+    const expirationTime = siweMessage.expirationTime;
+    if (!expirationTime || expirationTime.getTime() !== expiresAt.getTime()) {
+      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+        reason: 'expiration_mismatch',
+        nonce: messageNonce,
+      });
+
+      return new Response(
+        JSON.stringify({ error: 'invalid_message', message: 'SIWE expiration mismatch' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const isValidSiwe = validateSiweMessage({
+      message: siweMessage,
+      address: normalizedAddress as `0x${string}`,
+      domain: expectedDomain,
+      nonce: nonceRecord.nonce,
+      time: new Date(),
+    });
+
+    if (!isValidSiwe) {
+      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+        reason: 'siwe_validation_failed',
+        nonce: messageNonce,
+      });
+
+      return new Response(
+        JSON.stringify({ error: 'invalid_message', message: 'SIWE validation failed' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify signature using viem
     let isValid = false;
     try {
       if (typedData && domain && types && primaryType) {
@@ -221,8 +330,7 @@ Deno.serve(async (req) => {
       console.error('Signature verification error:', error);
       await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'signature_verification_error',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        verification_type: typedData ? 'eip712' : 'personal_sign',
+        error: error.message,
       });
 
       return corsJsonResponse({ error: 'verification_failed', message: 'Signature verification failed' }, 400);
@@ -231,7 +339,6 @@ Deno.serve(async (req) => {
     if (!isValid) {
       await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'invalid_signature',
-        verification_type: typedData ? 'eip712' : 'personal_sign',
       });
 
       return corsJsonResponse({ error: 'invalid_signature', message: 'Signature verification failed' }, 400);
@@ -241,7 +348,8 @@ Deno.serve(async (req) => {
     await supabase
       .from('wallet_nonces')
       .update({ used_at: new Date().toISOString() })
-      .eq('nonce', nonce);
+      .eq('nonce', messageNonce)
+      .eq('chain_id', resolvedChainId);
 
     // Get client metadata
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0] ||
@@ -250,16 +358,13 @@ Deno.serve(async (req) => {
     const userAgent = req.headers.get('user-agent') || 'unknown';
 
     // Upsert wallet identity (idempotent)
-    // Assume chain_id = 1 (Ethereum mainnet) for Phase 1
-    const chainId = 1;
-
     const { data: walletIdentity, error: upsertError } = await supabase
       .from('wallet_identities')
       .upsert(
         {
           user_id: user.id,
           wallet_address: normalizedAddress,
-          chain_id: chainId,
+          chain_id: resolvedChainId,
           signature,
           message,
           verified_at: new Date().toISOString(),
@@ -291,7 +396,7 @@ Deno.serve(async (req) => {
     // Log successful verification
     await logAuditEvent(supabase, user!.id, 'wallet_verified', normalizedAddress, {
       wallet_identity_id: walletIdentity.id,
-      chain_id: chainId,
+      chain_id: resolvedChainId,
       ip: clientIp,
     });
 
