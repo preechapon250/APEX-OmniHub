@@ -32,58 +32,13 @@
  * Date: 2026-01-01
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import { verifyMessage, verifyTypedData } from 'https://esm.sh/viem@2.21.54';
+import { handleCors, corsJsonResponse } from '../_shared/cors.ts';
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limiting.ts';
+import { isValidWalletAddress, isValidSignature, validateRequestBody } from '../_shared/validation.ts';
+import { createSupabaseClient, authenticateUser, getClientIP, getUserAgent, createAuthErrorResponse, createMethodNotAllowedResponse, createInternalErrorResponse } from '../_shared/auth.ts';
 
-// CORS headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
 
-// Rate limiting configuration
-const VERIFY_RATE_LIMIT_MAX = 10;
-const VERIFY_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
-
-/**
- * Validate Ethereum wallet address format
- */
-function isValidWalletAddress(address: string): boolean {
-  return /^0x[a-fA-F0-9]{40}$/.test(address);
-}
-
-/**
- * Validate Ethereum signature format
- */
-function isValidSignature(signature: string): boolean {
-  return /^0x[a-fA-F0-9]{130}$/.test(signature);
-}
-
-/**
- * Check rate limit for user
- */
-function checkRateLimit(userId: string): { allowed: boolean; remaining: number; resetIn: number } {
-  const now = Date.now();
-  const key = `verify:${userId}`;
-
-  const record = rateLimitStore.get(key);
-
-  if (!record || now >= record.resetAt) {
-    rateLimitStore.set(key, { count: 1, resetAt: now + VERIFY_RATE_LIMIT_WINDOW_MS });
-    return { allowed: true, remaining: VERIFY_RATE_LIMIT_MAX - 1, resetIn: VERIFY_RATE_LIMIT_WINDOW_MS };
-  }
-
-  if (record.count >= VERIFY_RATE_LIMIT_MAX) {
-    return { allowed: false, remaining: 0, resetIn: record.resetAt - now };
-  }
-
-  record.count++;
-  rateLimitStore.set(key, record);
-
-  return { allowed: true, remaining: VERIFY_RATE_LIMIT_MAX - record.count, resetIn: record.resetAt - now };
-}
 
 /**
  * Extract nonce from verification message
@@ -123,130 +78,80 @@ async function logAuditEvent(
  */
 Deno.serve(async (req) => {
   // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders, status: 204 });
-  }
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   // Only allow POST requests
   if (req.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'method_not_allowed', message: 'Only POST requests are allowed' }),
-      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return createMethodNotAllowedResponse(['POST']);
   }
 
   try {
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createSupabaseClient();
 
     // Get authenticated user from JWT
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'unauthorized', message: 'Authentication required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const authResult = await authenticateUser(req.headers.get('Authorization'), supabase);
+    if (!authResult.success) {
+      return createAuthErrorResponse(authResult.error!);
     }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'unauthorized', message: 'Invalid or expired session' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { user } = authResult;
 
     // Check rate limit
-    const rateLimit = checkRateLimit(user.id);
+    const rateLimit = checkRateLimit(user!.id, RATE_LIMITS.WEB3_VERIFY);
     if (!rateLimit.allowed) {
-      await logAuditEvent(supabase, user.id, 'wallet_verify_rate_limited', 'unknown', {
+      await logAuditEvent(supabase, user!.id, 'wallet_verify_rate_limited', 'unknown', {
         retry_after: Math.ceil(rateLimit.resetIn / 1000),
       });
 
-      return new Response(
-        JSON.stringify({
-          error: 'rate_limit_exceeded',
-          message: `Too many verification attempts. Try again in ${Math.ceil(rateLimit.resetIn / 1000)} seconds.`,
-          retry_after: Math.ceil(rateLimit.resetIn / 1000),
-        }),
-        {
-          status: 429,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-            'Retry-After': Math.ceil(rateLimit.resetIn / 1000).toString(),
-          },
-        }
-      );
+      return createRateLimitResponse(rateLimit.resetIn, `Too many verification attempts. Try again in ${Math.ceil(rateLimit.resetIn / 1000)} seconds.`);
     }
 
-    // Parse request body
+    // Parse and validate request body
     const body = await req.json();
     const { wallet_address, signature, message, typedData, domain, types, primaryType } = body;
 
     // Validate required fields - support both personal_sign and typedData
-    if (!wallet_address || !signature) {
-      return new Response(
-        JSON.stringify({
-          error: 'invalid_request',
-          message: 'wallet_address and signature are required',
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const validation = validateRequestBody(body, ['wallet_address', 'signature']);
+    if (!validation.valid) {
+      return corsJsonResponse({ error: 'invalid_request', message: validation.errors[0] }, 400);
     }
 
     // Must have either message (personal_sign) or typedData (EIP-712)
     if (!message && !typedData) {
-      return new Response(
-        JSON.stringify({
-          error: 'invalid_request',
-          message: 'Either message (personal_sign) or typedData (EIP-712) must be provided',
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({
+        error: 'invalid_request',
+        message: 'Either message (personal_sign) or typedData (EIP-712) must be provided',
+      }, 400);
     }
 
     // Normalize and validate wallet address
     const normalizedAddress = wallet_address.toLowerCase();
     if (!isValidWalletAddress(normalizedAddress)) {
-      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+      await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'invalid_address_format',
       });
 
-      return new Response(
-        JSON.stringify({ error: 'invalid_address', message: 'Invalid Ethereum wallet address format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({ error: 'invalid_address', message: 'Invalid Ethereum wallet address format' }, 400);
     }
 
     // Validate signature format
     if (!isValidSignature(signature)) {
-      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+      await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'invalid_signature_format',
       });
 
-      return new Response(
-        JSON.stringify({ error: 'invalid_signature', message: 'Invalid signature format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({ error: 'invalid_signature', message: 'Invalid signature format' }, 400);
     }
 
     // Extract and validate nonce from message
     const nonce = extractNonceFromMessage(message);
     if (!nonce) {
-      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+      await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'nonce_not_found_in_message',
       });
 
-      return new Response(
-        JSON.stringify({ error: 'invalid_message', message: 'Message does not contain a valid nonce' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({ error: 'invalid_message', message: 'Message does not contain a valid nonce' }, 400);
     }
 
     // Verify nonce exists, is unused, and not expired
@@ -259,30 +164,24 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (nonceError || !nonceRecord) {
-      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+      await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'nonce_not_found',
         nonce,
       });
 
-      return new Response(
-        JSON.stringify({ error: 'invalid_nonce', message: 'Nonce not found or already used' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({ error: 'invalid_nonce', message: 'Nonce not found or already used' }, 400);
     }
 
     // Check nonce expiration
     const expiresAt = new Date(nonceRecord.expires_at);
     if (expiresAt < new Date()) {
-      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+      await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'nonce_expired',
         nonce,
         expires_at: nonceRecord.expires_at,
       });
 
-      return new Response(
-        JSON.stringify({ error: 'nonce_expired', message: 'Nonce has expired, please request a new one' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({ error: 'nonce_expired', message: 'Nonce has expired, please request a new one' }, 400);
     }
 
     // Verify signature using viem - support both personal_sign and typedData
@@ -313,38 +212,29 @@ Deno.serve(async (req) => {
           verification_type: 'personal_sign',
         });
       } else {
-        await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+        await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
           reason: 'no_verification_data',
         });
-        return new Response(
-          JSON.stringify({ error: 'invalid_request', message: 'No verification data provided' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return corsJsonResponse({ error: 'invalid_request', message: 'No verification data provided' }, 400);
       }
     } catch (error) {
       console.error('Signature verification error:', error);
-      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+      await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'signature_verification_error',
         error: error instanceof Error ? error.message : 'Unknown error',
         verification_type: typedData ? 'eip712' : 'personal_sign',
       });
 
-      return new Response(
-        JSON.stringify({ error: 'verification_failed', message: 'Signature verification failed' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({ error: 'verification_failed', message: 'Signature verification failed' }, 400);
     }
 
     if (!isValid) {
-      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+      await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'invalid_signature',
         verification_type: typedData ? 'eip712' : 'personal_sign',
       });
 
-      return new Response(
-        JSON.stringify({ error: 'invalid_signature', message: 'Signature verification failed' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({ error: 'invalid_signature', message: 'Signature verification failed' }, 400);
     }
 
     // Mark nonce as used
@@ -390,50 +280,32 @@ Deno.serve(async (req) => {
 
     if (upsertError) {
       console.error('Error upserting wallet identity:', upsertError);
-      await logAuditEvent(supabase, user.id, 'wallet_verify_failed', normalizedAddress, {
+      await logAuditEvent(supabase, user!.id, 'wallet_verify_failed', normalizedAddress, {
         reason: 'database_error',
         error: upsertError.message,
       });
 
-      return new Response(
-        JSON.stringify({ error: 'database_error', message: 'Failed to save wallet identity' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return corsJsonResponse({ error: 'database_error', message: 'Failed to save wallet identity' }, 500);
     }
 
     // Log successful verification
-    await logAuditEvent(supabase, user.id, 'wallet_verified', normalizedAddress, {
+    await logAuditEvent(supabase, user!.id, 'wallet_verified', normalizedAddress, {
       wallet_identity_id: walletIdentity.id,
       chain_id: chainId,
       ip: clientIp,
     });
 
     // Return success response
-    return new Response(
-      JSON.stringify({
-        success: true,
-        wallet_identity_id: walletIdentity.id,
-        wallet_address: normalizedAddress,
-        chain_id: chainId,
-        verified_at: walletIdentity.verified_at,
-      }),
-      {
-        status: 200,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    return corsJsonResponse({
+      success: true,
+      wallet_identity_id: walletIdentity.id,
+      wallet_address: normalizedAddress,
+      chain_id: chainId,
+      verified_at: walletIdentity.verified_at,
+    });
 
   } catch (error) {
     console.error('Unexpected error in web3-verify function:', error);
-    return new Response(
-      JSON.stringify({
-        error: 'internal_error',
-        message: 'An unexpected error occurred',
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return createInternalErrorResponse('An unexpected error occurred');
   }
 });
