@@ -397,9 +397,10 @@
 }
 
 .nav__logo-wordmark {
-  height: 20px;
+  height: calc(64px * 0.95);
   width: auto;
   display: block;
+  filter: drop-shadow(0 0 12px rgba(196, 87, 28, 0.6)) drop-shadow(0 0 24px rgba(196, 87, 28, 0.4));
 }
 
 .nav__links {
