@@ -217,6 +217,8 @@ function Nav() {
           <a href="/" className="nav__logo" aria-label="APEX OmniHub home">
             <img
               className="nav__logo-wordmark h-6 w-auto object-contain"
+              src="/apex-omnihub-wordmark.svg"
+              alt="APEX OmniHub"
             />
           </a>
 

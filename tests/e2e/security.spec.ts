@@ -53,12 +53,12 @@ beforeEach(() => {
   };
 
   // Force assignment to global scope
-  Object.defineProperty(global, 'location', {
+  Object.defineProperty(globalThis, 'location', {
     writable: true,
     value: mockLocation,
   });
 
-  Object.defineProperty(global, 'window', {
+  Object.defineProperty(globalThis, 'window', {
     writable: true,
     value: { location: mockLocation },
   });
