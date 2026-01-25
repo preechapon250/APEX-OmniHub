@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +27,7 @@ export default function Agent() {
   const { setTheme } = useTheme();
 
   // Voice command mapping (deterministic, auditable)
-  const commands: VoiceCommand[] = [
+  const commands: VoiceCommand[] = useMemo(() => [
     {
       pattern: /open integrations?|show integrations?|go to integrations?/i,
       action: () => navigate('/integrations'),
@@ -76,7 +76,7 @@ export default function Agent() {
       },
       description: 'Show help',
     },
-  ];
+  ], [navigate, setTheme]);
 
   const processCommand = useCallback(
     (text: string) => {
@@ -93,7 +93,6 @@ export default function Agent() {
         description: 'Try saying "help" for available commands',
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [commands]
   );
 

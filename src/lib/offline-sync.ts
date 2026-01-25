@@ -379,23 +379,23 @@ export const mergeStrategies = {
   /**
    * Last-write-wins based on timestamp
    */
-  lastWriteWins: (serverData: any, clientData: any) => {
-    const serverTime = serverData.updatedAt || serverData.timestamp || 0;
-    const clientTime = clientData.updatedAt || clientData.timestamp || 0;
+  lastWriteWins: (serverData: unknown, clientData: unknown): unknown => {
+    const serverTime = (serverData as Record<string, unknown>).updatedAt || (serverData as Record<string, unknown>).timestamp || 0;
+    const clientTime = (clientData as Record<string, unknown>).updatedAt || (clientData as Record<string, unknown>).timestamp || 0;
     return clientTime > serverTime ? clientData : serverData;
   },
 
   /**
    * Merge objects by taking union of fields, client wins on conflicts
    */
-  fieldLevelMerge: (serverData: any, clientData: any) => {
-    return { ...serverData, ...clientData };
+  fieldLevelMerge: (serverData: unknown, clientData: unknown): unknown => {
+    return { ...(serverData as Record<string, unknown>), ...(clientData as Record<string, unknown>) };
   },
 
   /**
    * Merge arrays by concatenating and deduplicating
    */
-  arrayUnion: (serverData: any[], clientData: any[]) => {
+  arrayUnion: (serverData: unknown[], clientData: unknown[]): unknown[] => {
     const combined = [...serverData, ...clientData];
     return Array.from(new Set(combined.map((item) => JSON.stringify(item)))).map((item) =>
       JSON.parse(item)
@@ -405,9 +405,9 @@ export const mergeStrategies = {
   /**
    * Merge by comparing specific version/revision numbers
    */
-  versionBased: (serverData: any, clientData: any) => {
-    const serverVersion = serverData.version || 0;
-    const clientVersion = clientData.version || 0;
+  versionBased: (serverData: unknown, clientData: unknown): unknown => {
+    const serverVersion = (serverData as Record<string, unknown>).version || 0;
+    const clientVersion = (clientData as Record<string, unknown>).version || 0;
     return clientVersion > serverVersion ? clientData : serverData;
   },
 };

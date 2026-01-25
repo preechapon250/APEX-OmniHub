@@ -34,7 +34,7 @@ export default function Settings() {
   const navigate = useNavigate();
 
   const [biometricAvailable, setBiometricAvailable] = useState(false);
-  const [biometricInfo, setBiometricInfo] = useState<any>(null);
+  const [biometricInfo, setBiometricInfo] = useState<Awaited<ReturnType<typeof getBiometricAuthenticatorInfo>> | null>(null);
   const [biometricEnabled, setBiometricEnabled] = useState(false);
 
   const [pushAvailable, setPushAvailable] = useState(false);
@@ -79,7 +79,7 @@ export default function Settings() {
       } else {
         toast.error('Failed to enable biometric authentication');
       }
-    } catch (error) {
+    } catch {
       toast.error('Biometric setup failed');
     }
   };
@@ -99,7 +99,7 @@ export default function Settings() {
       } else {
         toast.error('Failed to enable push notifications');
       }
-    } catch (error) {
+    } catch {
       toast.error('Push notification setup failed');
     }
   };
@@ -111,7 +111,7 @@ export default function Settings() {
         setPushEnabled(false);
         toast.success('Push notifications disabled');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to disable push notifications');
     }
   };

@@ -18,7 +18,6 @@ const FEATURE_FLAG = import.meta.env.VITE_OMNILINK_MOBILE_ONLY !== 'false';
  * - Query param ?desktop=1 is present (admin only)
  */
 export function MobileOnlyGate({ children }: MobileOnlyGateProps) {
-  const isMobile = useIsMobile(); // 768px breakpoint
   const { capabilities, loading } = useCapabilities();
   const [searchParams] = useSearchParams();
   const [isDesktop, setIsDesktop] = useState(false);

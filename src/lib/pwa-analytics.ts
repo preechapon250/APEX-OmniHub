@@ -5,6 +5,16 @@
 
 import { logAnalyticsEvent } from './monitoring';
 
+// BeforeInstallPromptEvent interface (not in standard TypeScript lib)
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 export interface PWAInstallMetrics {
   timestamp: string;
   platform: 'ios' | 'android' | 'desktop' | 'unknown';
@@ -61,7 +71,8 @@ export function trackPWAInstallPrompt() {
     });
 
     // Track user response to prompt
-    (e as any).userChoice?.then((choiceResult: { outcome: string }) => {
+    const promptEvent = e as BeforeInstallPromptEvent;
+    void promptEvent.userChoice.then((choiceResult) => {
       void logAnalyticsEvent('pwa.install.prompt_response', {
         outcome: choiceResult.outcome, // 'accepted' or 'dismissed'
         platform: detectPlatform(),

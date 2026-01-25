@@ -2,7 +2,6 @@ import { test, expect, devices } from '@playwright/test';
 
 // Mobile device configurations
 const iPhone = devices['iPhone 13'];
-const pixel = devices['Pixel 5'];
 
 test.describe('OmniLink Mobile PWA', () => {
   test.use(iPhone);
