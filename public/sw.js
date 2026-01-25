@@ -138,4 +138,126 @@ self.addEventListener('message', (event) => {
   }
 });
 
-console.log('[SW] OmniLink PWA service worker v4 loaded');
+// Push notification event - show notification when received
+self.addEventListener('push', (event) => {
+  console.log('[SW] Push notification received');
+
+  if (!event.data) {
+    return;
+  }
+
+  let notification;
+  try {
+    notification = event.data.json();
+  } catch (err) {
+    notification = {
+      title: 'OmniLink',
+      body: event.data.text(),
+    };
+  }
+
+  const options = {
+    body: notification.body || '',
+    icon: notification.icon || '/icons/pwa/icon-192.png',
+    badge: notification.badge || '/icons/pwa/icon-96.png',
+    image: notification.image,
+    data: notification.data || {},
+    actions: notification.actions || [],
+    tag: notification.tag || 'default',
+    requireInteraction: notification.requireInteraction || false,
+    vibrate: [200, 100, 200],
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(notification.title || 'OmniLink', options)
+  );
+});
+
+// Notification click event - handle user click on notification
+self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notification clicked:', event.action);
+
+  event.notification.close();
+
+  // Handle different actions
+  let url = '/';
+  if (event.action === 'open-dash') {
+    url = '/omnidash';
+  } else if (event.action === 'open-trace') {
+    url = '/omnitrace';
+  } else if (event.action === 'open-integrations') {
+    url = '/integrations';
+  } else if (event.notification.data && event.notification.data.url) {
+    url = event.notification.data.url;
+  }
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Focus existing window if available
+      for (const client of clientList) {
+        if (client.url.includes(url.split('?')[0]) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Open new window if no existing window found
+      if (clients.openWindow) {
+        return clients.openWindow(url);
+      }
+    })
+  );
+
+  // Send message to client
+  clients.matchAll().then((clients) => {
+    clients.forEach((client) => {
+      client.postMessage({
+        type: 'notification-click',
+        action: event.action,
+        data: event.notification.data,
+      });
+    });
+  });
+});
+
+// Background sync event - sync offline data when connection returns
+self.addEventListener('sync', (event) => {
+  console.log('[SW] Background sync triggered:', event.tag);
+
+  if (event.tag === 'omnilink-sync') {
+    event.waitUntil(
+      fetch('/api/sync/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Sync failed');
+          }
+          console.log('[SW] Background sync completed successfully');
+          return response.json();
+        })
+        .catch((error) => {
+          console.error('[SW] Background sync failed:', error);
+          // Retry sync later
+          throw error;
+        })
+    );
+  }
+});
+
+// Periodic background sync (requires permission)
+self.addEventListener('periodicsync', (event) => {
+  console.log('[SW] Periodic sync triggered:', event.tag);
+
+  if (event.tag === 'omnilink-periodic-sync') {
+    event.waitUntil(
+      fetch('/api/sync/periodic', {
+        method: 'POST',
+      }).then((response) => {
+        console.log('[SW] Periodic sync completed');
+        return response.json();
+      })
+    );
+  }
+});
+
+console.log('[SW] OmniLink PWA service worker v4 loaded with push & sync support');

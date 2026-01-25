@@ -121,38 +121,54 @@ const queryClient = new QueryClient({
 
 const AppContent = () => {
   useOfflineSupport();
-  
+
   useEffect(() => {
     const log = createDebugLogger('App.tsx', 'A');
-    
+
     // #region agent log
     log('AppContent useEffect entry');
     // #endregion
-    
+
     try {
       // Initialize production systems
       // #region agent log
       log('Before initializeMonitoring');
       // #endregion
       initializeMonitoring();
-      
+
       // #region agent log
       log('Before initializeSecurity');
       // #endregion
       initializeSecurity();
-      
+
       // #region agent log
       log('Before logConfiguration');
       // #endregion
       logConfiguration();
-      
+
+      // Initialize PWA features (async, non-blocking)
+      import('./lib/pwa-analytics').then((module) => {
+        module.initializePWAAnalytics();
+      });
+
+      import('./lib/biometric-auth').then((module) => {
+        module.initializeBiometricAuth();
+      });
+
+      import('./lib/push-notifications').then((module) => {
+        const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+        if (vapidKey) {
+          module.initializePushNotifications(vapidKey);
+        }
+      });
+
       // #region agent log
       log('AppContent initialization complete');
       // #endregion
     } catch (error) {
       // #region agent log
-      log('AppContent initialization error', { 
-        error: error instanceof Error ? error.message : 'unknown' 
+      log('AppContent initialization error', {
+        error: error instanceof Error ? error.message : 'unknown'
       });
       // #endregion
       console.error('Failed to initialize app:', error);
