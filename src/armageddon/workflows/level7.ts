@@ -62,7 +62,7 @@ export async function ArmageddonLevel7Workflow(config: Level7Config): Promise<Ar
     setHandler(statusQuery, () => ({ status, completedBatteries }));
 
     // Register signal handler for progress updates (from activity heartbeats)
-    setHandler(progressSignal, (progress) => {
+    setHandler(progressSignal, (_) => {
         // Progress updates are received but workflow state remains deterministic
         // The heartbeat data can be used for observability
     });
@@ -127,7 +127,7 @@ export async function ArmageddonLevel7Workflow(config: Level7Config): Promise<Ar
  * Activity for updating armageddon_runs table
  * This is executed as a child activity after workflow completion
  */
-export async function updateArmageddonRunsActivity(result: ArmageddonLevel7Result): Promise<void> {
+export async function updateArmageddonRunsActivity(_: ArmageddonLevel7Result): Promise<void> {
     // This activity would be registered separately to update Supabase
     // The workflow completes and Temporal ensures this runs
 }
