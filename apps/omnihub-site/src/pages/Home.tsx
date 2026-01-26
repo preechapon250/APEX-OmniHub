@@ -263,9 +263,10 @@ function CapabilityShowcase() {
     {
       id: 'maestro',
       title: 'M.A.E.S.T.R.O.',
-      description: 'Multi-Agent Execution, Simulation, Testing, Reliability & Operations',
+      description:
+        'Routes intent safely, escalates high-risk actions to MAN Mode, and produces audit-grade execution receipts.',
       icon: <IconAutomation size={28} />,
-      href: '#maestro',
+      href: '#orchestrator',
     },
   ];
 
