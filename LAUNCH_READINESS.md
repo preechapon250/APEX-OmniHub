@@ -42,6 +42,12 @@ The APEX OmniHub has passed all "Heart Transplant" verification gates. The OMEGA
 - [x] **Security**: RPC ports locked down (VPC only)
 - [x] **Logs**: Structured logging enabled
 
+### 4. Security Hardening (P0 Remediation)
+- [x] **Migration Integrity**: No hardcoded credentials in SQL migrations
+- [x] **Circuit Breaker**: MAN Mode async triage enabled (threshold: 0.90)
+- [x] **Secret Scanning**: Gitleaks/Trufflehog clean
+- [x] **Dynamic Admin Seeding**: JWT claim-based role assignment
+
 ---
 
 ## 📜 Launch Procedure
