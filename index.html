@@ -26,8 +26,7 @@
 
   <!-- Open Graph / Social -->
   <meta property="og:title" content="APEX OmniLink — Your Portal to Intelligence" />
-  <meta property="og:description"
-    content="Your portal to observability, integrations, and operational control." />
+  <meta property="og:description" content="Your portal to observability, integrations, and operational control." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://apexomnihub.icu/" />
   <meta property="og:image" content="https://apexomnihub.icu/og.png" />
@@ -35,13 +34,12 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="APEX OmniLink — Your Portal to Intelligence" />
-  <meta name="twitter:description"
-    content="Your portal to observability, integrations, and operational control." />
+  <meta name="twitter:description" content="Your portal to observability, integrations, and operational control." />
   <meta name="twitter:image" content="https://apexomnihub.icu/og.png" />
 
   <!-- Security Headers -->
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' 'unsafe-inline' https://esm.sh https://cdn.jsdelivr.net https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.lovable.dev https://ai.gateway.lovable.dev https://vercel.live; frame-src 'self' https://vercel.live; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;" />
+    content="default-src 'self'; script-src 'self' https://esm.sh https://cdn.jsdelivr.net https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.lovable.dev https://ai.gateway.lovable.dev https://vercel.live; frame-src 'self' https://vercel.live; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;" />
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
   <meta http-equiv="X-Frame-Options" content="DENY" />
   <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
@@ -58,6 +56,8 @@
   <script type="module" src="/src/main.tsx"></script>
 
   <!-- Service Worker Registration -->
+  <!-- DISABLED: Production Hardening Phase 2 (C5) -->
+  <!-- 
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', async () => {
@@ -78,6 +78,7 @@
       });
     }
   </script>
+  -->
 </body>
 
 </html>

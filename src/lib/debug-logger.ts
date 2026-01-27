@@ -19,29 +19,41 @@ interface LogData {
  * Silently fails if logging server is unavailable
  */
 export function debugLog({ location, message, data, hypothesisId }: LogData): void {
+  // C1: Safety Gate - No-op in production unless explicitly enabled
+  if (import.meta.env.PROD && import.meta.env.VITE_DEBUG_LOGGING !== 'true') {
+    return;
+  }
+
   try {
     const payload = {
       location,
       message,
       data: { ...data, timestamp: Date.now() },
       timestamp: Date.now(),
-      sessionId: SESSION_ID,
-      runId: RUN_ID,
+      // Use ephemeral IDs if not provided, don't leak hardcoded session
+      sessionId: globalThis.crypto?.randomUUID() || 'ephemeral-session',
+      runId: globalThis.crypto?.randomUUID() || 'ephemeral-run',
       hypothesisId: hypothesisId || 'A',
     };
 
-    fetch(LOG_ENDPOINT, {
+    const endpoint = import.meta.env.VITE_DEBUG_LOG_ENDPOINT || LOG_ENDPOINT;
+
+    // Only fetch if we have a valid endpoint
+    if (!endpoint || endpoint.includes('localhost')) {
+      if (import.meta.env.DEV) console.log('[DebugLog]', payload);
+      return;
+    }
+
+    fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     }).catch((err) => {
-      // Only log to console in development
       if (import.meta.env.DEV) {
         console.error('Log fetch failed:', err);
       }
     });
   } catch (e) {
-    // Only log to console in development
     if (import.meta.env.DEV) {
       console.error('Log setup failed:', e);
     }

@@ -161,7 +161,7 @@ const UpgradePrompt = ({ currentTier, requiredTier }: UpgradePromptProps) => {
           </div>
 
           <div className="space-y-3">
-            <Button className="w-full" size="lg">
+            <Button className="w-full" size="lg" onClick={() => navigate('/pricing')}>
               Upgrade to {tierNames[requiredTier]}
             </Button>
             <Button

@@ -20,6 +20,10 @@ The APEX OmniHub has passed all "Heart Transplant" verification gates. The OMEGA
 | **E2E Testing** | 🟢 | QA | Playwright |
 | **Disaster Recovery** | 🟢 | SRE | Antigravity |
 
+### Deployment Topology (C6)
+- **Vercel Target**: `apps/omnihub-site` (Marketing Site)
+- **Core App**: Local / Docker (Orchestrator + UI) - *Not configured for Vercel auto-deploy*
+
 ---
 
 ## 🛠️ System Component Status
