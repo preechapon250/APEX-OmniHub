@@ -58,6 +58,7 @@ The APEX OmniHub has passed all "Heart Transplant" verification gates. The OMEGA
 - [x] **Circuit Breaker**: MAN Mode async triage enabled (threshold: 0.90)
 - [x] **Secret Scanning**: Gitleaks/Trufflehog clean
 - [x] **Dynamic Admin Seeding**: JWT claim-based role assignment
+- [x] **Chaos Resilience**: Verified Panic Recovery (15/15 successful handoffs in simulation)
 
 ---
 
