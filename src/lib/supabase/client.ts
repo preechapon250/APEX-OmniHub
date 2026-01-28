@@ -10,6 +10,13 @@ type SupabaseClientOptions = {
 
 export function createSupabaseClient(options: SupabaseClientOptions): SupabaseClient<Database> {
   const key = options.serviceRoleKey || options.apiKey;
+  // H2: Security Guard - Prevent Service Role Key in Browser
+  if (globalThis.window && options.serviceRoleKey) {
+    const error = 'CRITICAL SECURITY VIOLATION: Service Role Key exposed in browser environment.';
+    console.error(error);
+    throw new Error(error);
+  }
+
   const client = createClient<Database>(options.url, key, {
     auth: {
       storage: globalThis.window ? globalThis.localStorage : undefined,

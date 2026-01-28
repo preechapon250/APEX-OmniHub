@@ -50,6 +50,11 @@ class Settings(BaseSettings):
     )
     cache_ttl_seconds: int = Field(default=86400, description="Cache TTL (24h default)")
 
+    # MAN Mode Configuration
+    man_mode_blocking_threshold: float = Field(
+        default=0.90, description="Risk score threshold for blocking (0.0-1.0)"
+    )
+
     # Application Configuration
     log_level: str = Field(default="INFO", description="Logging level")
     environment: str = Field(default="development", description="Environment name")

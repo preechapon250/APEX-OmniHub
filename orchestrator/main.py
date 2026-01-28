@@ -39,13 +39,11 @@ from activities.notify_man_task import notify_man_task
 from activities.omni_policy import evaluate_policy_activity
 from activities.omnitrace_activities import get_omnitrace_activities
 from activities.tools import (
-    acquire_distributed_lock,
     call_webhook,
     check_semantic_cache,
     create_record,
     delete_record,
     generate_plan_with_llm,
-    release_distributed_lock,
     search_database,
     send_email,
     setup_activities,
@@ -83,8 +81,9 @@ async def create_goal(request: GoalRequest):
         # Start workflow with unique ID
         workflow_id = f"goal-{request.trace_id}"
 
+        # C3: Start workflow via function reference for type safety
         handle = await client.start_workflow(
-            "AgentSagaWorkflow",
+            AgentWorkflow.run,
             args=[request.user_intent, request.user_id, {}],
             id=workflow_id,
             task_queue=os.getenv("TEMPORAL_TASK_QUEUE", "apex-orchestrator"),
@@ -164,9 +163,9 @@ async def start_worker() -> None:
             send_email,
             call_webhook,
             evaluate_policy_activity,
-            # Distributed locking activities
-            acquire_distributed_lock,
-            release_distributed_lock,
+            # C2: Distributed locking removed - deprecated via config
+            # acquire_distributed_lock,
+            # release_distributed_lock,
             # MAN Mode activities
             risk_triage,
             create_man_task,
