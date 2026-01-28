@@ -1,10 +1,15 @@
 /**
  * Production monitoring and observability utilities
  * Integrates with Sentry dynamically (no hard dependency) when DSN is provided.
+ * Includes OmniSentry for client-side self-healing monitoring.
  */
 
 import { appConfig, getEnvironment } from './config';
 import { createDebugLogger } from './debug-logger';
+import { initializeOmniSentry } from './omni-sentry';
+
+// Re-export OmniSentry for external access
+export { getHealthStatus, reportError as reportOmniError, withResilience } from './omni-sentry';
 
 let sentry: unknown = null;
 let sentryInitialized = false;
@@ -172,6 +177,19 @@ export function initializeMonitoring(): void {
   // #endregion
   
   try {
+    // Initialize OmniSentry if enabled via UI toggle (localStorage)
+    const omniSentryEnabled = (() => {
+      try {
+        return localStorage.getItem('omni_sentry_enabled') === 'true';
+      } catch {
+        return false;
+      }
+    })();
+    
+    if (omniSentryEnabled) {
+      initializeOmniSentry();
+    }
+    
     void ensureSentry();
 
     // #region agent log

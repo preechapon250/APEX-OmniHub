@@ -23,7 +23,11 @@ import os
 import sys
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 from temporalio.client import Client
 from temporalio.worker import Worker
 from uvicorn import Config, Server
@@ -51,8 +55,28 @@ from activities.tools import (
 from config import settings
 from workflows.agent_saga import AgentWorkflow
 
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
+
 # FastAPI app for HTTP API
 app = FastAPI(title="APEX Orchestrator API", version="1.0.0")
+
+# Attach rate limiter to app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# CORS Middleware - Configure allowed origins from environment
+CORS_ORIGINS = os.environ.get(
+    "CORS_ALLOWED_ORIGINS", "https://apexomnihub.icu,https://www.apexomnihub.icu"
+).split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 
 class GoalRequest(BaseModel):
@@ -84,7 +108,7 @@ async def create_goal(request: GoalRequest):
         # C3: Start workflow via function reference for type safety
         handle = await client.start_workflow(
             AgentWorkflow.run,
-            args=[request.user_intent, request.user_id, {}],
+            args=[request.user_intent, request.user_id, {"trace_id": request.trace_id}],
             id=workflow_id,
             task_queue=os.getenv("TEMPORAL_TASK_QUEUE", "apex-orchestrator"),
         )
