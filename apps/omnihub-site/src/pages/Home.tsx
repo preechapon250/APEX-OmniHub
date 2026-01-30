@@ -27,7 +27,7 @@ function Hero() {
       </div>
       <div className="container hero__grid">
         <div className="hero__content">
-          <h1 className="heading-hero hero__title" style={{ marginTop: '-66.35px' }}>{siteConfig.hero.title}</h1>
+          <h1 className="heading-hero hero__title">{siteConfig.hero.title}</h1>
           <p className="hero__tagline">{siteConfig.hero.tagline}</p>
           <p className="hero__subtitle">{siteConfig.hero.subtitle}</p>
           <p className="hero__description" style={{ color: 'rgba(100, 180, 255, 0.95)' }}>
@@ -59,18 +59,21 @@ function HighlightsSection() {
       description:
         'Imagine a platform that anticipates your needs and streamlines your operations effortlessly.',
       icon: <IconAutomation size={22} />,
+      href: '/ai-automation.html',
     },
     {
       title: 'Smart Integrations',
       description:
         'Unify your tools and data into one intelligent system. Say goodbye to silos and productivity bottlenecks.',
       icon: <IconIntegrations size={22} />,
+      href: '/smart-integrations.html',
     },
     {
       title: 'Advanced Analytics',
       description:
         'Gain a 360° view of your organization. Make data-driven decisions with cutting-edge insights.',
       icon: <IconAnalytics size={22} />,
+      href: '/advanced-analytics.html',
     },
   ];
 
