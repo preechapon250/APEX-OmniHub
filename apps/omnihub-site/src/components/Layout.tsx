@@ -104,7 +104,7 @@ function Nav() {
               width="182"
               height="26"
               style={{
-                height: '29.04px',
+                height: '60.8px',
                 width: 'auto',
                 aspectRatio: '1012.5 / 147'
               }}
