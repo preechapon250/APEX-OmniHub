@@ -402,7 +402,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  height: 76.8px;
 }
 
 .nav__logo {
@@ -473,7 +473,7 @@
 }
 
 .nav__logo-wordmark {
-  height: calc(64px * 0.95);
+  height: calc(76.8px * 0.95);
   width: auto;
   display: block;
   filter: drop-shadow(0 0 12px rgba(196, 87, 28, 0.6)) drop-shadow(0 0 24px rgba(196, 87, 28, 0.4));
