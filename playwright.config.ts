@@ -36,11 +36,12 @@ export default defineConfig({
     },
   ],
 
-  // Start preview server before running tests
-  webServer: {
+  // Start preview server before running tests (only if BASE_URL not provided)
+  // In CI, the workflow manages the server manually
+  webServer: process.env.BASE_URL ? undefined : {
     command: 'npm run build && npm run preview -- --port 4174',
     url: 'http://localhost:4174',
     reuseExistingServer: true,
-    timeout: 120_000, // 2 minutes for build + preview startup
+    timeout: 300_000, // 5 minutes for build + preview startup
   },
 });
