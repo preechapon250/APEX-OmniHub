@@ -3,9 +3,12 @@
 
 set -e
 
-echo "=========================================="
+# Constants
+readonly SEPARATOR="=========================================="
+
+echo "$SEPARATOR"
 echo "OmniHub Local Agent Integration Verification"
-echo "=========================================="
+echo "$SEPARATOR"
 echo ""
 
 # Colors
@@ -31,7 +34,7 @@ echo -e "${GREEN}✓ requests library available${NC}"
 # Check environment
 echo ""
 echo "2. Checking environment configuration..."
-if [ ! -f .env ]; then
+if [[ ! -f .env ]]; then
     echo -e "${YELLOW}! .env not found, copying from .env.example${NC}"
     cp .env.example .env
     echo -e "${RED}✗ Please edit .env with your actual OmniHub credentials${NC}"
@@ -40,12 +43,12 @@ fi
 
 source .env
 
-if [ -z "$OMNIHUB_BASE_URL" ] || [ "$OMNIHUB_BASE_URL" == "https://your-project.supabase.co/functions/v1" ]; then
+if [[ -z "$OMNIHUB_BASE_URL" || "$OMNIHUB_BASE_URL" == "https://your-project.supabase.co/functions/v1" ]]; then
     echo -e "${RED}✗ OMNIHUB_BASE_URL not configured in .env${NC}"
     exit 1
 fi
 
-if [ -z "$OMNIHUB_API_KEY" ] || [[ "$OMNIHUB_API_KEY" == *"xxxxx"* ]]; then
+if [[ -z "$OMNIHUB_API_KEY" || "$OMNIHUB_API_KEY" == *"xxxxx"* ]]; then
     echo -e "${RED}✗ OMNIHUB_API_KEY not configured in .env${NC}"
     exit 1
 fi
@@ -97,9 +100,9 @@ fi
 
 # Summary
 echo ""
-echo "=========================================="
+echo "$SEPARATOR"
 echo "Verification Complete!"
-echo "=========================================="
+echo "$SEPARATOR"
 echo ""
 echo "Next steps:"
 echo "1. Open OmniDash: http://localhost:5173/omnidash/local-agents"

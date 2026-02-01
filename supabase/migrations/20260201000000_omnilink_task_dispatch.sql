@@ -38,13 +38,14 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_task_id uuid;
   v_task_record record;
+  v_running_status constant public.omnilink_req_status := 'running';
+  v_status_key constant text := 'status';
 BEGIN
   -- Atomic claim: find one eligible task and claim it
   UPDATE public.omnilink_orchestration_requests
   SET
-    status = 'running'::public.omnilink_req_status,
+    status = v_running_status,
     worker_id = p_worker_id,
     claimed_at = now(),
     updated_at = now()
@@ -64,11 +65,11 @@ BEGIN
   RETURNING id, type, params, policy INTO v_task_record;
 
   IF v_task_record.id IS NULL THEN
-    RETURN jsonb_build_object('status', 'no_tasks');
+    RETURN jsonb_build_object(v_status_key, 'no_tasks');
   END IF;
 
   RETURN jsonb_build_object(
-    'status', 'claimed',
+    v_status_key, 'claimed',
     'task_id', v_task_record.id,
     'type', v_task_record.type,
     'params', v_task_record.params,
@@ -93,10 +94,14 @@ AS $$
 DECLARE
   v_updated_count int;
   v_final_status public.omnilink_req_status;
+  v_running_status constant public.omnilink_req_status := 'running';
+  v_succeeded_status constant public.omnilink_req_status := 'succeeded';
+  v_failed_status constant public.omnilink_req_status := 'failed';
+  v_status_key constant text := 'status';
 BEGIN
   -- Validate status
   IF p_status NOT IN ('succeeded', 'failed') THEN
-    RETURN jsonb_build_object('status', 'invalid_status');
+    RETURN jsonb_build_object(v_status_key, 'invalid_status');
   END IF;
 
   v_final_status := p_status::public.omnilink_req_status;
@@ -110,7 +115,7 @@ BEGIN
     updated_at = now()
   WHERE id = p_task_id
     AND worker_id = p_worker_id
-    AND status = 'running'::public.omnilink_req_status;
+    AND status = v_running_status;
 
   GET DIAGNOSTICS v_updated_count = ROW_COUNT;
 
@@ -120,16 +125,16 @@ BEGIN
       SELECT 1 FROM public.omnilink_orchestration_requests
       WHERE id = p_task_id
         AND worker_id = p_worker_id
-        AND status IN ('succeeded'::public.omnilink_req_status, 'failed'::public.omnilink_req_status)
+        AND status IN (v_succeeded_status, v_failed_status)
     ) THEN
-      RETURN jsonb_build_object('status', 'already_completed');
+      RETURN jsonb_build_object(v_status_key, 'already_completed');
     END IF;
-    RETURN jsonb_build_object('status', 'not_found_or_not_owned');
+    RETURN jsonb_build_object(v_status_key, 'not_found_or_not_owned');
   END IF;
 
   INSERT INTO public.audit_logs(actor_id, action_type, resource_type, resource_id, metadata)
   VALUES (NULL, 'omnilink.task.completed', 'omnilink_task', p_task_id::text, jsonb_build_object('worker_id', p_worker_id, 'final_status', p_status));
 
-  RETURN jsonb_build_object('status', 'completed', 'final_status', p_status);
+  RETURN jsonb_build_object(v_status_key, 'completed', 'final_status', p_status);
 END;
 $$;

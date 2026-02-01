@@ -23,6 +23,16 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 
+class OmniHubEventRejectedException(Exception):
+    """Raised when an event is rejected by OmniHub."""
+    pass
+
+
+class OmniHubRetryExhaustedException(Exception):
+    """Raised when retry attempts are exhausted."""
+    pass
+
+
 class OmniHubConnector:
     """Client for OmniHub OmniLink Port integration."""
 
@@ -175,6 +185,33 @@ class OmniHubConnector:
         response.raise_for_status()
         return response.json()
 
+    def _check_event_result(self, result: Dict[str, Any]) -> bool:
+        """
+        Check if event result indicates success or requires retry.
+
+        Returns:
+            True if should retry, False if successful
+
+        Raises:
+            OmniHubEventRejectedException: If event was rejected
+        """
+        if not result.get('results') or not isinstance(result['results'], list):
+            return False  # Success - no results array means direct success response
+
+        first_result = result['results'][0]
+        status = first_result.get('status')
+
+        if status in ('queued', 'ingested', 'duplicate'):
+            return False  # Success
+
+        if status == 'rate_limited':
+            retry_after = first_result.get('retry_after_seconds', 2)
+            logger.warning(f"Rate limited, retrying after {retry_after}s")
+            time.sleep(retry_after)
+            return True  # Should retry
+
+        raise OmniHubEventRejectedException(f"Event rejected: {first_result}")
+
     def _post_with_retry(
         self,
         url: str,
@@ -191,20 +228,10 @@ class OmniHubConnector:
                 response.raise_for_status()
                 result = response.json()
 
-                if result.get('results') and isinstance(result['results'], list):
-                    first_result = result['results'][0]
-                    if first_result.get('status') in ('queued', 'ingested', 'duplicate'):
-                        return result
-
-                    if first_result.get('status') == 'rate_limited':
-                        retry_after = first_result.get('retry_after_seconds', 2)
-                        logger.warning(f"Rate limited, retrying after {retry_after}s")
-                        time.sleep(retry_after)
-                        continue
-
-                    raise Exception(f"Event rejected: {first_result}")
-
-                return result
+                should_retry = self._check_event_result(result)
+                if not should_retry:
+                    return result
+                # Continue to next retry if rate limited
 
             except requests.exceptions.RequestException as e:
                 if attempt < max_retries - 1:
@@ -215,7 +242,7 @@ class OmniHubConnector:
                     logger.error(f"Request failed after {max_retries} attempts: {e}")
                     raise
 
-        raise Exception("Unexpected retry loop exit")
+        raise OmniHubRetryExhaustedException("Retry loop exhausted without success")
 
 
 class TaskWorker:

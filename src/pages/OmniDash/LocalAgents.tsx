@@ -156,7 +156,7 @@ export default function LocalAgents() {
                   <PieChart>
                     <Pie data={leadGenChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
                       {leadGenChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${entry.name}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip />

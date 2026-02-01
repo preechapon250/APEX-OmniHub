@@ -30,6 +30,12 @@ interface Task {
   policy?: { require_approval?: boolean };
 }
 
+const getStatusBadgeVariant = (status: TaskStatus): "default" | "destructive" | "secondary" => {
+  if (status === "succeeded") return "default";
+  if (status === "failed") return "destructive";
+  return "secondary";
+};
+
 const STATUS_ICONS: Record<TaskStatus, React.ReactNode> = {
   queued: <Clock className="h-4 w-4" />,
   waiting_approval: <AlertCircle className="h-4 w-4 text-amber-500" />,
@@ -287,7 +293,7 @@ export default function Tasks() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={task.status === "succeeded" ? "default" : task.status === "failed" ? "destructive" : "secondary"}>
+                      <Badge variant={getStatusBadgeVariant(task.status)}>
                         {task.status}
                       </Badge>
                       {task.status === "waiting_approval" && (

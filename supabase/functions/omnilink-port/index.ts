@@ -536,53 +536,13 @@ async function handleTaskComplete(req: Request, corsHeaders: HeadersInit): Promi
   return jsonResponse({ status: 'completed', final_status: result.final_status }, 200, corsHeaders);
 }
 
-Deno.serve(async (req) => {
-  const requestOrigin = req.headers.get('origin')?.replace(/\/$/, '') ?? null;
-  const corsHeaders = buildCorsHeaders(requestOrigin);
-
-  if (!OMNILINK_ENABLED) {
-    return corsErrorResponse('omnilink_disabled', 'OmniLink port is disabled', 503, requestOrigin);
-  }
-
-  if (req.method === 'OPTIONS') {
-    return handlePreflight(req);
-  }
-
-  if (!isOriginAllowed(requestOrigin)) {
-    return corsErrorResponse('origin_not_allowed', 'CORS policy: Origin not allowed', 403, requestOrigin);
-  }
-
-  const route = parseRoute(new URL(req.url).pathname);
-  const isOmniPort = route === 'omniport';
+async function handleEventBatchRequest(
+  req: Request,
+  route: string,
+  isOmniPort: boolean,
+  corsHeaders: HeadersInit
+): Promise<Response> {
   const targetRoute = isOmniPort ? 'events' : route;
-
-  if (req.method === 'GET' && route === 'health') {
-    return jsonResponse({ status: 'ok', checked_at: new Date().toISOString() }, 200, corsHeaders);
-  }
-
-  if (route === 'keys' && req.method === 'POST') {
-    return handleKeyCreation(req, corsHeaders);
-  }
-
-  // Task dispatch routes (special handling before general POST check)
-  if (route.startsWith('tasks/')) {
-    const subRoute = route.split('/')[1];
-    if (subRoute === 'claim') {
-      return handleTaskClaim(req, corsHeaders);
-    }
-    if (subRoute === 'complete') {
-      return handleTaskComplete(req, corsHeaders);
-    }
-    return jsonResponse({ error: 'not_found' }, 404, corsHeaders);
-  }
-
-  if (!['events', 'commands', 'workflows', 'omniport', 'tasks'].includes(route)) {
-    return jsonResponse({ error: 'not_found' }, 404, corsHeaders);
-  }
-
-  if (req.method !== 'POST') {
-    return jsonResponse({ error: 'method_not_allowed' }, 405, corsHeaders);
-  }
 
   const authResult = await authenticateRequest(req, corsHeaders);
   if ('status' in authResult) return authResult;
@@ -632,4 +592,65 @@ Deno.serve(async (req) => {
   } finally {
     releaseConcurrency(apiKey.id);
   }
+}
+
+function routeTaskRequest(route: string, req: Request, corsHeaders: HeadersInit): Response | null {
+  if (!route.startsWith('tasks/')) return null;
+
+  const subRoute = route.split('/')[1];
+  if (subRoute === 'claim') {
+    return handleTaskClaim(req, corsHeaders);
+  }
+  if (subRoute === 'complete') {
+    return handleTaskComplete(req, corsHeaders);
+  }
+  return jsonResponse({ error: 'not_found' }, 404, corsHeaders);
+}
+
+Deno.serve(async (req) => {
+  const requestOrigin = req.headers.get('origin')?.replace(/\/$/, '') ?? null;
+  const corsHeaders = buildCorsHeaders(requestOrigin);
+
+  // Early exits for disabled service or preflight
+  if (!OMNILINK_ENABLED) {
+    return corsErrorResponse('omnilink_disabled', 'OmniLink port is disabled', 503, requestOrigin);
+  }
+
+  if (req.method === 'OPTIONS') {
+    return handlePreflight(req);
+  }
+
+  if (!isOriginAllowed(requestOrigin)) {
+    return corsErrorResponse('origin_not_allowed', 'CORS policy: Origin not allowed', 403, requestOrigin);
+  }
+
+  // Parse route
+  const route = parseRoute(new URL(req.url).pathname);
+  const isOmniPort = route === 'omniport';
+
+  // Simple GET route
+  if (req.method === 'GET' && route === 'health') {
+    return jsonResponse({ status: 'ok', checked_at: new Date().toISOString() }, 200, corsHeaders);
+  }
+
+  // API key creation route
+  if (route === 'keys' && req.method === 'POST') {
+    return handleKeyCreation(req, corsHeaders);
+  }
+
+  // Task dispatch routes
+  const taskResponse = await routeTaskRequest(route, req, corsHeaders);
+  if (taskResponse) return taskResponse;
+
+  // Validate route for batch processing
+  if (!['events', 'commands', 'workflows', 'omniport', 'tasks'].includes(route)) {
+    return jsonResponse({ error: 'not_found' }, 404, corsHeaders);
+  }
+
+  if (req.method !== 'POST') {
+    return jsonResponse({ error: 'method_not_allowed' }, 405, corsHeaders);
+  }
+
+  // Handle event batch request
+  return handleEventBatchRequest(req, route, isOmniPort, corsHeaders);
 });
