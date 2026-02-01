@@ -233,6 +233,8 @@ function getRequiredFields(route: string): string[] {
     return ['specversion', 'id', 'source', 'type', 'time', 'data'];
   } else if (route === 'commands') {
     return ['specversion', 'id', 'source', 'type', 'time', 'params'];
+  } else if (route === 'tasks') {
+    return ['specversion', 'id', 'source', 'type', 'time', 'params'];
   }
   return ['specversion', 'id', 'source', 'type', 'time', 'workflow', 'input'];
 }
@@ -253,6 +255,14 @@ function validatePermissions(
       return { valid: false, error: 'adapter_not_allowed' };
     }
     if (!enforcePermission(apiKey.scopes ?? {}, 'orchestrations:request')) {
+      return { valid: false, error: 'permission_denied' };
+    }
+  }
+
+  if (route === 'tasks') {
+    requestType = 'task';
+    permissionRequired = 'tasks:create';
+    if (!enforcePermission(apiKey.scopes ?? {}, permissionRequired)) {
       return { valid: false, error: 'permission_denied' };
     }
   }
@@ -426,41 +436,113 @@ async function validatePayload(
   return { items, requestSize: payloadSize };
 }
 
-Deno.serve(async (req) => {
-  const requestOrigin = req.headers.get('origin')?.replace(/\/$/, '') ?? null;
-  const corsHeaders = buildCorsHeaders(requestOrigin);
+async function handleTaskClaim(req: Request, corsHeaders: HeadersInit): Promise<Response> {
+  const authResult = await authenticateRequest(req, corsHeaders);
+  if ('status' in authResult) return authResult;
+  const { apiKey } = authResult;
 
-  if (!OMNILINK_ENABLED) {
-    return corsErrorResponse('omnilink_disabled', 'OmniLink port is disabled', 503, requestOrigin);
+  if (!enforcePermission(apiKey.scopes ?? {}, 'tasks:claim')) {
+    return jsonResponse({ error: 'permission_denied' }, 403, corsHeaders);
   }
 
-  if (req.method === 'OPTIONS') {
-    return handlePreflight(req);
+  const { body } = await parseJsonBody(req).catch(() => ({ body: null, raw: '' }));
+  const payload = (body ?? {}) as Record<string, unknown>;
+  const workerId = payload.worker_id as string | undefined;
+  const target = payload.target as string | undefined;
+
+  if (!workerId) {
+    return jsonResponse({ error: 'worker_id_required' }, 400, corsHeaders);
   }
 
-  if (!isOriginAllowed(requestOrigin)) {
-    return corsErrorResponse('origin_not_allowed', 'CORS policy: Origin not allowed', 403, requestOrigin);
+  const serviceClient = createServiceClient();
+  const { data, error } = await serviceClient.rpc('omnilink_claim_task', {
+    p_integration_id: apiKey.integration_id,
+    p_worker_id: workerId,
+    p_target: target ?? null,
+  });
+
+  if (error) {
+    return jsonResponse({ error: 'claim_failed', message: error.message }, 500, corsHeaders);
   }
 
-  const route = parseRoute(new URL(req.url).pathname);
-  const isOmniPort = route === 'omniport';
+  const result = data as { status: string; task_id?: string; type?: string; params?: unknown; policy?: unknown };
+  if (result.status === 'no_tasks') {
+    return jsonResponse({ status: 'no_tasks' }, 200, corsHeaders);
+  }
+
+  return jsonResponse({
+    status: 'claimed',
+    task: {
+      id: result.task_id,
+      type: result.type,
+      params: result.params,
+      policy: result.policy,
+    },
+  }, 200, corsHeaders);
+}
+
+async function handleTaskComplete(req: Request, corsHeaders: HeadersInit): Promise<Response> {
+  const authResult = await authenticateRequest(req, corsHeaders);
+  if ('status' in authResult) return authResult;
+  const { apiKey } = authResult;
+
+  if (!enforcePermission(apiKey.scopes ?? {}, 'tasks:complete')) {
+    return jsonResponse({ error: 'permission_denied' }, 403, corsHeaders);
+  }
+
+  const { body } = await parseJsonBody(req).catch(() => ({ body: null, raw: '' }));
+  const payload = (body ?? {}) as Record<string, unknown>;
+  const taskId = payload.task_id as string | undefined;
+  const workerId = payload.worker_id as string | undefined;
+  const taskStatus = payload.status as string | undefined;
+  const output = payload.output as Record<string, unknown> | undefined;
+  const errorMessage = payload.error_message as string | undefined;
+
+  if (!taskId || !workerId || !taskStatus) {
+    return jsonResponse({ error: 'missing_required_fields' }, 400, corsHeaders);
+  }
+
+  // Truncate output to max 16KB
+  const MAX_OUTPUT_BYTES = 16 * 1024;
+  let boundedOutput = output;
+  if (output) {
+    const outputStr = JSON.stringify(output);
+    if (new TextEncoder().encode(outputStr).length > MAX_OUTPUT_BYTES) {
+      boundedOutput = { truncated: true, summary: outputStr.slice(0, 8000) + '...(truncated)' };
+    }
+  }
+
+  const serviceClient = createServiceClient();
+  const { data, error } = await serviceClient.rpc('omnilink_complete_task', {
+    p_task_id: taskId,
+    p_worker_id: workerId,
+    p_status: taskStatus,
+    p_output: boundedOutput ?? null,
+    p_error_message: errorMessage ?? null,
+  });
+
+  if (error) {
+    return jsonResponse({ error: 'complete_failed', message: error.message }, 500, corsHeaders);
+  }
+
+  const result = data as { status: string; final_status?: string };
+  if (result.status === 'not_found_or_not_owned') {
+    return jsonResponse({ error: 'task_not_found_or_not_owned' }, 404, corsHeaders);
+  }
+  if (result.status === 'already_completed') {
+    return jsonResponse({ status: 'already_completed' }, 200, corsHeaders);
+  }
+
+  return jsonResponse({ status: 'completed', final_status: result.final_status }, 200, corsHeaders);
+}
+
+async function handleEventBatchRequest(
+  req: Request,
+  route: string,
+  isOmniPort: boolean,
+  corsHeaders: HeadersInit
+): Promise<Response> {
   const targetRoute = isOmniPort ? 'events' : route;
-
-  if (req.method === 'GET' && route === 'health') {
-    return jsonResponse({ status: 'ok', checked_at: new Date().toISOString() }, 200, corsHeaders);
-  }
-
-  if (route === 'keys' && req.method === 'POST') {
-    return handleKeyCreation(req, corsHeaders);
-  }
-
-  if (!['events', 'commands', 'workflows', 'omniport'].includes(route)) {
-    return jsonResponse({ error: 'not_found' }, 404, corsHeaders);
-  }
-
-  if (req.method !== 'POST') {
-    return jsonResponse({ error: 'method_not_allowed' }, 405, corsHeaders);
-  }
 
   const authResult = await authenticateRequest(req, corsHeaders);
   if ('status' in authResult) return authResult;
@@ -510,4 +592,65 @@ Deno.serve(async (req) => {
   } finally {
     releaseConcurrency(apiKey.id);
   }
+}
+
+function routeTaskRequest(route: string, req: Request, corsHeaders: HeadersInit): Response | null {
+  if (!route.startsWith('tasks/')) return null;
+
+  const subRoute = route.split('/')[1];
+  if (subRoute === 'claim') {
+    return handleTaskClaim(req, corsHeaders);
+  }
+  if (subRoute === 'complete') {
+    return handleTaskComplete(req, corsHeaders);
+  }
+  return jsonResponse({ error: 'not_found' }, 404, corsHeaders);
+}
+
+Deno.serve(async (req) => {
+  const requestOrigin = req.headers.get('origin')?.replace(/\/$/, '') ?? null;
+  const corsHeaders = buildCorsHeaders(requestOrigin);
+
+  // Early exits for disabled service or preflight
+  if (!OMNILINK_ENABLED) {
+    return corsErrorResponse('omnilink_disabled', 'OmniLink port is disabled', 503, requestOrigin);
+  }
+
+  if (req.method === 'OPTIONS') {
+    return handlePreflight(req);
+  }
+
+  if (!isOriginAllowed(requestOrigin)) {
+    return corsErrorResponse('origin_not_allowed', 'CORS policy: Origin not allowed', 403, requestOrigin);
+  }
+
+  // Parse route
+  const route = parseRoute(new URL(req.url).pathname);
+  const isOmniPort = route === 'omniport';
+
+  // Simple GET route
+  if (req.method === 'GET' && route === 'health') {
+    return jsonResponse({ status: 'ok', checked_at: new Date().toISOString() }, 200, corsHeaders);
+  }
+
+  // API key creation route
+  if (route === 'keys' && req.method === 'POST') {
+    return handleKeyCreation(req, corsHeaders);
+  }
+
+  // Task dispatch routes
+  const taskResponse = await routeTaskRequest(route, req, corsHeaders);
+  if (taskResponse) return taskResponse;
+
+  // Validate route for batch processing
+  if (!['events', 'commands', 'workflows', 'omniport', 'tasks'].includes(route)) {
+    return jsonResponse({ error: 'not_found' }, 404, corsHeaders);
+  }
+
+  if (req.method !== 'POST') {
+    return jsonResponse({ error: 'method_not_allowed' }, 405, corsHeaders);
+  }
+
+  // Handle event batch request
+  return handleEventBatchRequest(req, route, isOmniPort, corsHeaders);
 });
