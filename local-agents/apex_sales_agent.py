@@ -2,6 +2,12 @@
 """
 APEX-Sales Agent - Local machine script for outbound calling and booking.
 Emits telemetry to OmniHub and executes tasks via OmniLink Port.
+
+SECURITY NOTE: This script uses random.random() for SIMULATION ONLY.
+The PRNG is used to generate realistic test data distributions (e.g., 70% call
+connection rate) for demo purposes. In production, actual call outcomes would come
+from real telephony systems. This is NOT used for any cryptographic or security-
+sensitive operations (tokens, keys, authentication, etc.).
 """
 
 import os
@@ -47,7 +53,10 @@ class ApexSalesAgent:
         )
 
         # Simulate connection success rate (70%)
-        if random.random() < 0.7:
+        # SECURITY: random.random() is safe here - only used for test data simulation,
+        # NOT for cryptographic or security-sensitive operations. Production would use
+        # actual telephony system outcomes instead of this simulated distribution.
+        if random.random() < 0.7:  # nosec: simulation only, not security-sensitive
             self.handle_connected(lead_id, phone)
         else:
             self.handle_failed(lead_id, phone, "No answer")
@@ -67,7 +76,10 @@ class ApexSalesAgent:
         )
 
         # Simulate booking success rate (40% of connected calls)
-        if random.random() < 0.4:
+        # SECURITY: random.random() is safe here - only used for test data simulation,
+        # NOT for cryptographic or security-sensitive operations. Production would use
+        # actual booking system outcomes instead of this simulated distribution.
+        if random.random() < 0.4:  # nosec: simulation only, not security-sensitive
             self.book_meeting(lead_id, phone)
         else:
             self.complete_call(lead_id, "Not interested")
