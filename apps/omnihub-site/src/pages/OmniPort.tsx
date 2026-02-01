@@ -1,6 +1,4 @@
-import { Layout } from '@/components/Layout';
-import { Section, SectionHeader } from '@/components/Section';
-import { BulletItem, BulletList } from '@/components/BulletItem';
+import { Layout, Section, SectionHeader, BulletItem, BulletList } from '@/components';
 
 export function OmniPortPage() {
   return (

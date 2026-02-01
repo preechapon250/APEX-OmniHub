@@ -1,5 +1,5 @@
-import { CapabilityPageTemplate } from '@/components/CapabilityPageTemplate';
-import { aiAutomationData } from '@/data/capability-pages';
+import { CapabilityPageTemplate } from '@/components';
+import { aiAutomationData } from '@/data';
 
 export function AiAutomationPage() {
   return <CapabilityPageTemplate {...aiAutomationData} />;

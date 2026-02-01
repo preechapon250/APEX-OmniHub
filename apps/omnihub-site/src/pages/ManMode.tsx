@@ -1,6 +1,4 @@
-import { Layout } from '@/components/Layout';
-import { Section, SectionHeader } from '@/components/Section';
-import { BulletItem, BulletList } from '@/components/BulletItem';
+import { Layout, Section, SectionHeader, BulletItem, BulletList } from '@/components';
 import { siteConfig } from '@/content/site';
 
 export function ManModePage() {
