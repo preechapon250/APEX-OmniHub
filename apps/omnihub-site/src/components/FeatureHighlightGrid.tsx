@@ -46,7 +46,7 @@ export function FeatureHighlightGrid({ items }: FeatureHighlightGridProps) {
         return (
           <li key={item.title}>
             {item.href ? (
-              <a href={item.href} className="card feature-card" style={{ textDecoration: 'none', display: 'block' }}>
+              <a href={item.href} className="card feature-card" style={{ textDecoration: 'none' }}>
                 {content}
               </a>
             ) : (
