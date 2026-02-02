@@ -50,31 +50,14 @@ export default function SecretLogin({
     };
   }, [seq, go]);
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      // Trigger click logic manually or call go logic if appropriate
-      // Since onClick handles the complex logic, we can re-route or simplify. 
-      // For a secret login, we might not want explicit keyboard activation for the 'clicks' feature, 
-      // but SonarQube demands it. The 'L O G I N' sequence is already handled by window listener.
-      // We'll map Enter/Space to a "click".
-      const now = Date.now();
-      clickTimes.current.push(now);
-      clickTimes.current = clickTimes.current.filter(t => now - t <= windowMs);
-      if (clickTimes.current.length >= clicks) go();
-    }
-  };
-
-  // Non-intrusive wrapper: no styles, no tab stop by default unless accessible
+  // Non-intrusive wrapper: no styles, but accessible tab stop
   return (
-    <span 
-      onClick={onClick} 
-      onKeyDown={onKeyDown}
-      role="button" 
-      tabIndex={0} 
+    <button
+      type="button"
+      onClick={onClick}
       style={{ display: "contents", cursor: "pointer" }}
     >
       {children}
-    </span>
+    </button>
   );
 }
