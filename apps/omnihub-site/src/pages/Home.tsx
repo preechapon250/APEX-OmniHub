@@ -225,7 +225,7 @@ function ManModeSection() {
             <li>User notified for manual review</li>
             <li>Full audit trail maintained</li>
           </ul>
-          <a href="/tech-specs.html#man-mode" className="btn btn--secondary mt-8">
+          <a href="/man-mode.html" className="btn btn--secondary mt-8">
             Learn More
           </a>
         </div>
