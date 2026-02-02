@@ -5,28 +5,28 @@ import { Header } from '@/components/Header';
 import { supabase } from '@/integrations/supabase/client';
 
 interface VoiceMetrics {
-  handshakeAvg: number;
-  latencyP99: number;
-  activeSessions: number;
-  safetyViolations: number;
+  readonly handshakeAvg: number;
+  readonly latencyP99: number;
+  readonly activeSessions: number;
+  readonly safetyViolations: number;
 }
 
 interface VoiceLog {
-  type: string;
-  msg: string;
-  timestamp: string;
+  readonly type: string;
+  readonly msg: string;
+  readonly timestamp: string;
 }
 
 interface VoiceHealthResponse {
-  metrics: VoiceMetrics;
-  logs: VoiceLog[];
+  readonly metrics: VoiceMetrics;
+  readonly logs: VoiceLog[];
 }
 
 interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: LucideIcon;
-  color?: string;
+  readonly title: string;
+  readonly value: string | number;
+  readonly icon: LucideIcon;
+  readonly color?: string;
 }
 
 const StatCard = ({
@@ -112,7 +112,7 @@ export default function VoiceHealth(): JSX.Element {
           </CardHeader>
           <CardContent className="h-64 overflow-y-auto font-mono text-xs text-green-400">
             {logs.map((l, i) => (
-              <div key={i} className="border-b border-green-900/30 py-1">
+              <div key={`${l.timestamp}-${i}`} className="border-b border-green-900/30 py-1">
                 <span className="text-gray-500">
                   [{new Date(l.timestamp).toLocaleTimeString()}]
                 </span>{' '}

@@ -1,6 +1,6 @@
 interface ShowcaseItem {
-  title: string;
-  image: string;
+  readonly title: string;
+  readonly image: string;
 }
 
 type ShowcaseStripProps = Readonly<{

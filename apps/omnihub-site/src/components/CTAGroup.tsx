@@ -1,6 +1,6 @@
 interface CTAButton {
-  label: string;
-  href: string;
+  readonly label: string;
+  readonly href: string;
 }
 
 type CTAGroupProps = Readonly<{

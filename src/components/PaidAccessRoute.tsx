@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface PaidAccessRouteProps {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
   /** Minimum tier required (defaults to 'starter' - any paid tier) */
-  requiredTier?: SubscriptionTier;
+  readonly requiredTier?: SubscriptionTier;
   /** Custom redirect path for unauthenticated users */
-  authRedirect?: string;
+  readonly authRedirect?: string;
   /** Custom component to show when user lacks access */
-  fallback?: React.ReactNode;
+  readonly fallback?: React.ReactNode;
 }
 
 const tierLevels: Record<SubscriptionTier, number> = {
@@ -95,8 +95,8 @@ export const PaidAccessRoute = ({
 };
 
 interface UpgradePromptProps {
-  currentTier: SubscriptionTier;
-  requiredTier: SubscriptionTier;
+  readonly currentTier: SubscriptionTier;
+  readonly requiredTier: SubscriptionTier;
 }
 
 const UpgradePrompt = ({ currentTier, requiredTier }: UpgradePromptProps) => {
@@ -151,8 +151,8 @@ const UpgradePrompt = ({ currentTier, requiredTier }: UpgradePromptProps) => {
               {tierNames[requiredTier]} Features
             </h4>
             <ul className="space-y-2">
-              {tierFeatures.map((feature, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+              {tierFeatures.map((feature) => (
+                <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                   {feature}
                 </li>

@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 
 interface FeatureItem {
-  title: string;
-  description: string;
-  icon?: ReactNode;
-  href?: string;
+  readonly title: string;
+  readonly description: string;
+  readonly icon?: ReactNode;
+  readonly href?: string;
 }
 
 type FeatureHighlightGridProps = Readonly<{
