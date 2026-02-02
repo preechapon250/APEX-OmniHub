@@ -14,7 +14,7 @@ _Directable • Accountable • Dependable_
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()
 [![Security](https://img.shields.io/badge/security-zero--trust-blue)]()
-[![SonarQube](https://img.shields.io/badge/sonarqube-A+-success)]()
+[![SonarQube](https://img.shields.io/badge/sonarqube-A-success)]()
 [![License](https://img.shields.io/badge/license-proprietary-red)]()
 
 ---
