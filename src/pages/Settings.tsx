@@ -128,13 +128,10 @@ export default function Settings() {
     toast.success('Analytics disabled');
   };
 
-  const handleToggleAnalytics = (enabled: boolean) => {
-    if (enabled) {
-      handleEnableAnalytics();
-    } else {
-      handleDisableAnalytics();
-    }
-  };
+  const analyticsHandlers = {
+    enable: handleEnableAnalytics,
+    disable: handleDisableAnalytics,
+  } as const;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -303,7 +300,9 @@ export default function Settings() {
               </div>
               <Switch
                 checked={!analyticsOptedOut}
-                onCheckedChange={handleToggleAnalytics}
+                onCheckedChange={(checked) => 
+                  checked ? analyticsHandlers.enable() : analyticsHandlers.disable()
+                }
               />
             </div>
             <p className="text-xs text-muted-foreground">
