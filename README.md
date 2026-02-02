@@ -37,7 +37,7 @@ APEX OmniHub is the enterprise **AI orchestration control plane** for **governed
 | **Database Migrations** | 32 versioned SQL schemas                           |
 | **CI/CD Pipelines**     | 8 GitHub Actions workflows                         |
 | **Test Files**          | 81 test specifications                             |
-| **Integration Modules** | 5 (Maestro, OmniLink, OmniPort, Lovable, Supabase) |
+| **Integration Modules** | 5 (Maestro, OmniLink, OmniPort, Vercel, Supabase) |
 
 ---
 
