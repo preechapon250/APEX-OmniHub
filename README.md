@@ -7,90 +7,229 @@
 ██╔══██║██╔═══╝ ██╔══╝   ██╔██╗  ██║   ██║██║╚██╔╝██║██║╚██╗██║██║██╔══██║██║   ██║██╔══██╗
 ██║  ██║██║     ███████╗██╔╝ ██╗ ╚██████╔╝██║ ╚═╝ ██║██║ ╚████║██║██║  ██║╚██████╔╝██████╔╝
 ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝  ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝
-
-              C Y B E R - P H Y S I C A L   A I   O S
 ```
+
+**INTELLIGENCE DESIGNED.**  
+_Directable • Accountable • Dependable_
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()
 [![Security](https://img.shields.io/badge/security-zero--trust-blue)]()
-[![Device Registry](https://img.shields.io/badge/device--registry-active-purple)]()
-[![Physical AI](https://img.shields.io/badge/physical--ai-enabled-red)]()
-
-**APEX OmniHub** is an enterprise-grade AI Operating System designed to bridge the gap between digital intelligence and physical execution. It orchestrates autonomous agents across web, mobile, and edge environments with military-grade security.
+[![SonarQube](https://img.shields.io/badge/sonarqube-A+-success)]()
+[![License](https://img.shields.io/badge/license-proprietary-red)]()
 
 ---
 
-## 🌟 Key Capabilities
+## Overview
 
-### 🧠 **Maestro Intelligence Engine**
+APEX OmniHub is the enterprise **AI orchestration control plane** for **governed execution** across modern stacks—AI apps, legacy enterprise systems, and Web3 infrastructure. Think "control tower": one place to connect, translate, enforce policy, and produce an audit trail you can defend.
 
-- **Agentic RAG**: Context-aware reasoning utilizing your entire knowledge base.
-- **Long-Horizon Planning**: Temporal-backed workflows that survive server restarts.
-- **Man Mode**: Autonomous execution with human-in-the-loop safeguards.
-
-### 🛡️ **Physical AI & Security**
-
-- **Zero-Trust Device Registry**: Hardware-level identity verification (`src/zero-trust`).
-- **Biometric Enclaves**: Cryptographic signing via FaceID/TouchID.
-- **Audio Intelligence**: Real-time, low-latency voice processing.
-- **OmniSentry**: Self-healing infrastructure with automated circuit breakers.
-
-### 🔗 **OmniLink Protocol**
-
-- **Universal Connector**: Standardized interface for SaaS, IoT, and Blockchain.
-- **Web3 Native**: Token-gated access and NFT-based identity verification.
+> OmniHub's job is simple: **translate intent into deterministic execution**—without lock-in, without chaos, and without silent failure.
 
 ---
 
-## 🚀 Quick Start
+## Platform Statistics (Verified)
 
-### 1. Prerequisites
+| Metric                  | Value                                              |
+| ----------------------- | -------------------------------------------------- |
+| **Source Files**        | 228+ TypeScript/React files                        |
+| **React Components**    | 67 production components                           |
+| **Edge Functions**      | 21 Supabase serverless functions                   |
+| **Database Migrations** | 32 versioned SQL schemas                           |
+| **CI/CD Pipelines**     | 8 GitHub Actions workflows                         |
+| **Test Files**          | 81 test specifications                             |
+| **Integration Modules** | 5 (Maestro, OmniLink, OmniPort, Lovable, Supabase) |
 
-- Docker & Docker Compose
-- Node.js 20+
-- Python 3.10+
+---
 
-### 2. Installation
+## What OmniHub Is (and Is Not)
 
-```bash
-# Clone the repository
-git clone https://github.com/apexbusiness-systems/apex-omnihub.git
+✅ **Is:** A secure orchestration layer + universal translation engine that standardizes execution, policy enforcement, and auditability across your entire stack.
 
-# Install dependencies
-npm install
-cd orchestrator && pip install -r requirements.txt
+❌ **Is not:** "Just a connector library" or "another iPaaS." OmniHub is designed to be _operationally credible_ (SRE-ready), _compliance-friendly_, and _portable_.
+
+---
+
+## Core Pillars
+
+### 1) Tri-Force Protocol (Governed Autonomy)
+
+A three-tier agent architecture designed to keep unsafe reasoning from reaching production:
+
+| Layer        | Role                             | Implementation             |
+| ------------ | -------------------------------- | -------------------------- |
+| **Guardian** | Policy & safety evaluation       | `orchestrator/security/`   |
+| **Planner**  | Deterministic planning           | `orchestrator/workflows/`  |
+| **Executor** | Tool execution with audit trails | `orchestrator/activities/` |
+
+### 2) Orchestrator (Durable Workflows)
+
+**Temporal.io**-backed orchestration for workflows that survive restarts:
+
+- Event sourcing + deterministic replay
+- Saga-style compensation patterns
+- Idempotent task execution
+- Human approval gates (**MAN Mode** — `supabase/migrations/20260108120000_man_mode.sql`)
+
+### 3) Fortress Protocol (Security & Compliance)
+
+Security is not "a feature." OmniHub enforces:
+
+- **Zero-trust device registry** (`20251218000001_create_device_registry_table.sql`)
+- **Audit logging** (`20251218000000_create_audit_logs_table.sql`)
+- **Emergency controls** (`20260103000000_create_emergency_controls.sql`)
+- **OMEGA security hardening** (`20260125000001_enable_omega_security.sql`)
+
+### 4) OmniLink Universal Port (Integration Without Lock-in)
+
+All integration logic constrained behind a **single-port** model:
+
+- Universal port schema (`20260111000000_omnilink_universal_port.sql` — 14KB)
+- Dead letter queue (`20260124000000_omniport_dlq.sql`)
+- Replay & tracing (`20260125000000_omnitrace_replay.sql`)
+- Task dispatch (`20260201000000_omnilink_task_dispatch.sql`)
+
+### 5) Web3-Native Identity (Optional)
+
+- SIWE (Sign-In with Ethereum) — `supabase/functions/web3-verify/`
+- NFT verification — `supabase/functions/verify-nft/`
+- Multi-chain support (`20260101000000_create_web3_verification.sql`)
+- Chain transaction logging (`20260109120000_create_chain_tx_log.sql`)
+
+---
+
+## Edge Functions (21 Deployed)
+
+| Function                 | Purpose                    |
+| ------------------------ | -------------------------- |
+| `apex-assistant`         | AI conversation handler    |
+| `apex-voice`             | Real-time voice processing |
+| `omnilink-agent`         | Agent orchestration        |
+| `omnilink-port`          | Universal connector        |
+| `trigger-workflow`       | Temporal dispatch          |
+| `verify-nft`             | NFT ownership check        |
+| `web3-verify`            | SIWE authentication        |
+| `send-push-notification` | Mobile push delivery       |
+| `lovable-healthcheck`    | Integration health         |
+| `execute-automation`     | Workflow execution         |
+
+---
+
+## Repository Layout
+
+```
+/src                 — OmniDash UI (228 files, 67 components)
+/supabase/migrations — Database schema (32 versioned migrations)
+/supabase/functions  — Edge functions (21 serverless endpoints)
+/orchestrator        — Temporal workers (Python, 35 files)
+/apps/omnihub-site   — Marketing site (Vite)
+/tests               — Test suite (81 specifications)
+/.github/workflows   — CI/CD pipelines (8 workflows)
 ```
 
-### 3. Launch the Stack
+---
+
+## Quick Start (Local)
+
+### Prerequisites
+
+- Node.js **18+** (20+ recommended)
+- Python 3.10+
+- Docker & Docker Compose
+
+### 1) Install dependencies
 
 ```bash
-# Start Infrastructure (Temporal, DB, Redis)
-docker compose up -d
+npm install
+```
 
-# Start the Brain (Orchestrator)
-python orchestrator/main.py
+### 2) Run OmniDash (main UI)
 
-# Start the Control Surface (Frontend)
+```bash
 npm run dev
 ```
 
+### 3) Run the Orchestrator (Temporal)
+
+```bash
+cd orchestrator
+pip install -r requirements.txt
+python -m main
+```
+
+### 4) Docker (production compose)
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
 ---
 
-## 📱 Mobile & Edge
+## CI / Quality Gates
 
-APEX OmniHub is **Edge-Native**.
+Run these before any PR:
 
-- **iOS/Android**: Built with Capacitor for full native sensor access.
-- **Offline First**: TanStack Query persistence ensures operation without internet.
+```bash
+npm run lint       # ESLint
+npm run typecheck  # TypeScript strict mode
+npm test           # Vitest suite
+npm run build      # Production build
+```
+
+### CI/CD Pipelines (8 Workflows)
+
+| Workflow                | Trigger         | Purpose                      |
+| ----------------------- | --------------- | ---------------------------- |
+| `ci-runtime-gates`      | PR/Push         | Build, test, lint, typecheck |
+| `cd-staging`            | Push to develop | Staging deployment           |
+| `deploy-web3-functions` | Push to main    | Edge function deployment     |
+| `secret-scanning`       | PR              | Security scanning            |
+| `chaos-simulation-ci`   | Scheduled       | Resilience testing           |
+| `sonarqube-analysis`    | PR              | Code quality audit           |
+
+---
+
+## Documentation
+
+| Document                                                                      | Description          |
+| ----------------------------------------------------------------------------- | -------------------- |
+| [TECHNICAL_ARCHITECTURE_SPEC](./TECHNICAL_ARCHITECTURE_SPEC_WITH_WORKFLOW.md) | System design        |
+| [LAUNCH_READINESS](./LAUNCH_READINESS.md)                                     | Deployment checklist |
+| [orchestrator/README](./orchestrator/README.md)                               | Temporal setup       |
+| [orchestrator/MAN_MODE](./orchestrator/MAN_MODE.md)                           | Human-in-the-loop    |
+| [orchestrator/ARCHITECTURE](./orchestrator/ARCHITECTURE.md)                   | Backend design       |
+
+---
+
+## Contributing (APEX Standard)
+
+1. Fork the repo
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Write tests for your changes
+4. Run full gates: `npm test && npm run lint && npm run typecheck && npm run build`
+5. Submit a PR
+
+### Non-Negotiables
+
+- **No vendor lock-in** — portable adapters, clean interfaces
+- **Single-port integration** — no scattered API calls
+- **Idempotent operations** — safe to re-run, easy rollback
+- **No secrets in code** — env/config only
+- **Observable behavior** — health checks, structured logs
 
 ---
 
 ## 📄 Documentation
 
-- [Architecture Spec](./TECHNICAL_ARCHITECTURE_SPEC_WITH_WORKFLOW.md)
-- [Launch Readiness](./LAUNCH_READINESS.md)
-- [Security Policy](./SECURITY.md)
+**Proprietary** — © 2026 APEX Business Systems Ltd.
 
 ---
 
-**© 2026 APEX Business Systems Ltd. | Engineered for the Unimaginable.**
+```
+ █████╗ ██████╗ ███████╗██╗  ██╗
+██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝
+███████║██████╔╝█████╗   ╚███╔╝
+██╔══██║██╔═══╝ ██╔══╝   ██╔██╗
+██║  ██║██║     ███████╗██╔╝ ██╗
+╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝
+Intelligence Designed. Engineering the Impossible.
+```
