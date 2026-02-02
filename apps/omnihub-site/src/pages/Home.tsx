@@ -29,6 +29,9 @@ function Hero() {
         <div className="hero__content">
           <h1 className="heading-hero hero__title">{siteConfig.hero.title}</h1>
           <p className="hero__tagline">{siteConfig.hero.tagline}</p>
+          <p className="hero__subtagline">
+            {siteConfig.stamp.tagline}
+          </p>
           <p className="hero__subtitle">{siteConfig.hero.subtitle}</p>
           <p className="hero__description" style={{ color: 'rgba(100, 180, 255, 0.95)' }}>
             Understand Everything. Communicate Anything, to Every Platform.
