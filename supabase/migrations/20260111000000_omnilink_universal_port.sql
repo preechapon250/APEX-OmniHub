@@ -398,7 +398,7 @@ BEGIN
     RETURNING id INTO v_record_id;
 
     IF v_record_id IS NULL THEN
-      RETURN jsonb_build_object('status', 'duplicate');
+      RETURN jsonb_build_object('status', c_duplicate);
     END IF;
 
     INSERT INTO public.audit_logs(actor_id, action_type, resource_type, resource_id, metadata)
