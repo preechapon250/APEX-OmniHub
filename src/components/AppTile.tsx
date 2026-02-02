@@ -1,20 +1,20 @@
 import { Download } from 'lucide-react';
 
 export interface AppData {
-    name: string;
-    icon?: string;
-    alt?: string;
-    url?: string;
-    path?: string;
+    readonly name: string;
+    readonly icon?: string;
+    readonly alt?: string;
+    readonly url?: string;
+    readonly path?: string;
 }
 
 interface AppTileProps {
-    app: AppData;
-    isInstallable: boolean;
-    onInstall: () => void;
-    onNavigate: (path: string) => void;
-    onOpenUrl: (url: string) => void;
-    variant?: 'small' | 'large';
+    readonly app: AppData;
+    readonly isInstallable: boolean;
+    readonly onInstall: () => void;
+    readonly onNavigate: (path: string) => void;
+    readonly onOpenUrl: (url: string) => void;
+    readonly variant?: 'small' | 'large';
 }
 
 export const AppTile = ({

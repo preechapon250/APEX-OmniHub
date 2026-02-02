@@ -20,7 +20,7 @@ export default function SecretLogin({
 }: Props) {
   const nav = useNavigate();
   const [seq, setSeq] = useState<string>("");
-  const timer = useRef<number | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clickTimes = useRef<number[]>([]);
 
   const go = useCallback(() => nav(to), [nav, to]);
@@ -50,6 +50,14 @@ export default function SecretLogin({
     };
   }, [seq, go]);
 
-  // Non-intrusive wrapper: no styles, no tab stop.
-  return <span onClick={onClick} style={{ display: "contents" }}>{children}</span>;
+  // Non-intrusive wrapper: no styles, but accessible tab stop
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ display: "contents", cursor: "pointer" }}
+    >
+      {children}
+    </button>
+  );
 }

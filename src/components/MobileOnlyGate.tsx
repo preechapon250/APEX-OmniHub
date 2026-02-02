@@ -24,12 +24,12 @@ export function MobileOnlyGate({ children }: MobileOnlyGateProps) {
 
   useEffect(() => {
     const checkDesktop = () => {
-      setIsDesktop(window.innerWidth >= TABLET_BREAKPOINT);
+      setIsDesktop(globalThis.innerWidth >= TABLET_BREAKPOINT);
     };
 
     checkDesktop();
-    window.addEventListener('resize', checkDesktop);
-    return () => window.removeEventListener('resize', checkDesktop);
+    globalThis.addEventListener('resize', checkDesktop);
+    return () => globalThis.removeEventListener('resize', checkDesktop);
   }, []);
 
   // Feature flag check - if disabled, always allow access

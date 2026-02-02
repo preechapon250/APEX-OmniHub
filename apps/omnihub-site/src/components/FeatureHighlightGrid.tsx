@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 
 interface FeatureItem {
-  title: string;
-  description: string;
-  icon?: ReactNode;
-  href?: string;
+  readonly title: string;
+  readonly description: string;
+  readonly icon?: ReactNode;
+  readonly href?: string;
 }
 
 type FeatureHighlightGridProps = Readonly<{
@@ -46,7 +46,7 @@ export function FeatureHighlightGrid({ items }: FeatureHighlightGridProps) {
         return (
           <li key={item.title}>
             {item.href ? (
-              <a href={item.href} className="card feature-card" style={{ textDecoration: 'none', display: 'block' }}>
+              <a href={item.href} className="card feature-card" style={{ textDecoration: 'none' }}>
                 {content}
               </a>
             ) : (

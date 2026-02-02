@@ -1,111 +1,175 @@
-import { Layout, Section, SectionHeader, BulletItem, BulletList } from '@/components';
-import { siteConfig } from '@/content/site';
+import { Layout, Section } from '@/components';
 
 export function ManModePage() {
   return (
     <Layout title="MAN Mode">
       <Section>
-        <SectionHeader title="MAN Mode" subtitle="Manual Authorization Needed" />
-
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <p className="text-lg mb-8" style={{ lineHeight: '1.75' }}>{siteConfig.manMode.description}</p>
+          
+          {/* Header Section */}
+          <div className="mb-12 text-center">
+            <h1 className="heading-1 mb-4">MAN Mode</h1>
+            <p className="text-xl text-accent font-mono">protocol_v1.0.0 // manual_authorization_needed</p>
+          </div>
 
-          <div className="card" style={{ padding: 'var(--space-8)', backgroundColor: 'var(--color-orange)', color: 'var(--color-white)', marginBottom: 'var(--space-12)' }}>
-            <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-bold)', letterSpacing: '0.1em', marginBottom: 'var(--space-3)' }}>THE PHILOSOPHY</div>
-            <p style={{ fontSize: 'var(--font-size-lg)', lineHeight: '1.75', margin: 0 }}>
-              Automation accelerates business, but critical decisions require human judgment. MAN Mode gives you the best of both worlds.
+          {/* Abstract */}
+          <div className="card mb-8 p-8 border-l-4 border-l-accent">
+            <h3 className="heading-4 mb-2 font-mono uppercase text-sm tracking-wider opacity-70">01. Abstract</h3>
+            <p className="text-secondary leading-relaxed">
+              MAN Mode (Manual Authorization Needed) is a hybrid workflow governance protocol designed to bridge the gap between autonomous high-frequency automation and critical human oversight. 
+              By decoupling &quot;flagging&quot; from &quot;blocking,&quot; MAN Mode allows non-deterministic or high-risk operations to be suspended for human review without arresting the broader execution context of the parent workflow.
             </p>
           </div>
 
-          <div style={{ marginTop: 'var(--space-12)' }}>
-            <h2 className="heading-2 mb-8">Key Features</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-              <div className="card" style={{ padding: 'var(--space-6)' }}>
-                <h4 className="heading-4 mb-3">High-Risk Items Are Flagged, Not Blocked</h4>
-                <p className="text-secondary text-sm">
-                  Traditional approval workflows stop everything when they encounter an item requiring approval.
-                  MAN Mode is different: workflows continue execution while risky items are marked for review.
-                  All other operations complete normally with no waiting for approval.
-                </p>
-              </div>
+          {/* Core Philosophy */}
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
+            <div className="card p-6">
+              <h3 className="heading-4 mb-4 font-mono uppercase text-sm tracking-wider opacity-70">02. Design Philosophy</h3>
+              <ul className="space-y-3 text-secondary text-sm">
+                <li className="flex gap-2">
+                  <span className="text-accent font-bold">::</span>
+                  <span>Non-Blocking by Default</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-accent font-bold">::</span>
+                  <span>Asynchronous Adjudication</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-accent font-bold">::</span>
+                  <span>Full Audit Immutability</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-accent font-bold">::</span>
+                  <span>Zero-Trust Initialization</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="card p-6">
+              <h3 className="heading-4 mb-4 font-mono uppercase text-sm tracking-wider opacity-70">03. Alert Vectors</h3>
+              <ul className="space-y-3 text-secondary text-sm">
+                <li className="flex gap-2">
+                  <span className="text-accent font-bold">→</span>
+                  <span>In-App Dashboard Interrupt</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-accent font-bold">→</span>
+                  <span>SMTP/Email Protocol</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-accent font-bold">→</span>
+                  <span>Slack/Teams Webhooks</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-accent font-bold">→</span>
+                  <span>SMS/PagerDuty Gateway</span>
+                </li>
+              </ul>
+            </div>
+          </div>
 
-              <div className="card" style={{ padding: 'var(--space-6)' }}>
-                <h4 className="heading-4 mb-3">Workflow Continues with Zero Interruption</h4>
-                <p className="text-secondary text-sm">
-                  The workflow engine intelligently routes around items in MAN Mode. Operations that don't depend
-                  on flagged items proceed normally. Most operations complete successfully, delivering business value
-                  immediately. Only high-risk items wait for approval.
-                </p>
-              </div>
+          {/* Technical Implementation */}
+          <div className="mb-12">
+            <h2 className="heading-2 mb-6">Technical Implementation</h2>
+            <div className="card p-8 bg-surface-elevated font-mono text-xs overflow-x-auto">
+              <div className="text-secondary mb-4"># Workflow Logic Definition</div>
+              <pre className="text-accent">
+{`function executeStep(step, context) {
+  if (riskAnalysis(step) > THRESHOLD) {
+    // Flag for MAN Mode
+    const authorizationRequest = createAuthRequest({
+      riskLevel: 'HIGH',
+      reason: step.riskFactors,
+      context: context.snapshot()
+    });
+    
+    // Non-blocking: Parent process continues if not depedency
+    if (!step.isBlocking) {
+      return Promise.resolve({ status: 'PENDING_AUTH', ref: authorizationRequest.id });
+    }
+  }
+  
+  return step.execute();
+}`}
+              </pre>
+            </div>
+          </div>
 
-              <div className="card" style={{ padding: 'var(--space-6)' }}>
-                <h4 className="heading-4 mb-3">User Notified for Manual Review</h4>
-                <p className="text-secondary text-sm mb-4">Users are immediately notified through multiple channels when items require their attention:</p>
-                <BulletList>
-                  <BulletItem>In-app notifications with direct action links</BulletItem>
-                  <BulletItem>Email alerts with item context</BulletItem>
-                  <BulletItem>Slack/Teams integration</BulletItem>
-                  <BulletItem>SMS for critical items</BulletItem>
-                </BulletList>
+          {/* Risk Taxonomy */}
+          <div className="mb-12">
+            <h2 className="heading-2 mb-6">Risk Taxonomy & Classification</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="card p-5 border border-red-900/30">
+                <div className="text-accent font-bold mb-2 font-mono">CLASS_A (Financial)</div>
+                <p className="text-sm text-secondary">Transactions &gt; $10k, New Vendor Creation, Payroll Modifications.</p>
               </div>
-
-              <div className="card" style={{ padding: 'var(--space-6)' }}>
-                <h4 className="heading-4 mb-3">Full Audit Trail Maintained</h4>
-                <p className="text-secondary text-sm">
-                  Every MAN Mode operation is completely logged: why it was flagged, when it was flagged,
-                  who was notified, when it was reviewed, who approved/rejected, their rationale, and the final outcome.
-                </p>
+              <div className="card p-5 border border-red-900/30">
+                <div className="text-accent font-bold mb-2 font-mono">CLASS_B (Security)</div>
+                <p className="text-sm text-secondary">IAM Policy Updates, Key Rotation, Public Bucket Configuration.</p>
+              </div>
+              <div className="card p-5 border border-red-900/30">
+                <div className="text-accent font-bold mb-2 font-mono">CLASS_C (Data)</div>
+                <p className="text-sm text-secondary">Bulk Export (PII/PHI), Schema Destructive Migrations.</p>
+              </div>
+              <div className="card p-5 border border-red-900/30">
+                <div className="text-accent font-bold mb-2 font-mono">CLASS_D (Ops)</div>
+                <p className="text-sm text-secondary">Production Deployment, Infrastructure Scaling &gt; 200%.</p>
               </div>
             </div>
           </div>
 
-          <div style={{ marginTop: 'var(--space-16)' }}>
-            <h2 className="heading-2 mb-8">Risk Categories</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-4)' }}>
-              <div className="card" style={{ padding: 'var(--space-5)', textAlign: 'center' }}>
-                <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-accent)', marginBottom: 'var(--space-2)' }}>Financial</div>
-                <p className="text-secondary text-sm">Large transactions, unusual patterns, new vendors</p>
-              </div>
-              <div className="card" style={{ padding: 'var(--space-5)', textAlign: 'center' }}>
-                <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-accent)', marginBottom: 'var(--space-2)' }}>Security</div>
-                <p className="text-secondary text-sm">Privileged access, data exports, config changes</p>
-              </div>
-              <div className="card" style={{ padding: 'var(--space-5)', textAlign: 'center' }}>
-                <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-accent)', marginBottom: 'var(--space-2)' }}>Compliance</div>
-                <p className="text-secondary text-sm">PII/PHI access, regulatory reporting</p>
-              </div>
-              <div className="card" style={{ padding: 'var(--space-5)', textAlign: 'center' }}>
-                <div style={{ fontSize: 'var(--font-size-xl)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-accent)', marginBottom: 'var(--space-2)' }}>Operational</div>
-                <p className="text-secondary text-sm">Production changes, service disruptions</p>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginTop: 'var(--space-16)' }}>
-            <h2 className="heading-2 mb-8">Example: Customer Onboarding</h2>
-            <div className="card" style={{ padding: 'var(--space-8)', backgroundColor: 'var(--color-navy)', color: 'var(--color-white)' }}>
-              <div style={{ fontFamily: 'var(--font-family-mono)', fontSize: 'var(--font-size-sm)' }}>
-                <div style={{ marginBottom: 'var(--space-3)' }}><span style={{ opacity: 0.6 }}>Workflow: Customer Onboarding</span></div>
-                <div style={{ paddingLeft: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                  <div>├─ Create customer record <span style={{ color: '#4ade80' }}>✓ (completed)</span></div>
-                  <div>├─ Setup billing account <span style={{ color: '#4ade80' }}>✓ (completed)</span></div>
-                  <div>├─ Grant system access <span style={{ color: '#fb923c' }}>⚠ (MAN Mode - pending review)</span></div>
-                  <div>├─ Send welcome email <span style={{ color: '#4ade80' }}>✓ (completed)</span></div>
-                  <div>└─ Add to CRM <span style={{ color: '#4ade80' }}>✓ (completed)</span></div>
+          {/* Sequence Diagram Representation */}
+          <div className="mb-16">
+            <h2 className="heading-2 mb-6">Execution Sequence</h2>
+            <div className="card p-8 bg-navy text-white">
+              <div className="flex flex-col gap-4 font-mono text-sm">
+                <div className="flex items-center gap-4">
+                  <span className="w-24 text-gray-500">[00:00.00]</span>
+                  <span className="text-green-400">INIT</span>
+                  <span>Workflow &quot;Customer_Onboarding_v4&quot; started</span>
                 </div>
-                <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid rgba(255, 255, 255, 0.2)' }}>
-                  <div><span style={{ opacity: 0.6 }}>Status:</span> 4/5 completed, 1 pending manual review</div>
-                  <div><span style={{ opacity: 0.6 }}>Workflow:</span> NOT blocked</div>
+                <div className="flex items-center gap-4">
+                  <span className="w-24 text-gray-500">[00:00.15]</span>
+                  <span className="text-green-400">EXEC</span>
+                  <span>Step 1: CRM Record Created</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="w-24 text-gray-500">[00:00.42]</span>
+                  <span className="text-yellow-400">WARN</span>
+                  <span>Step 2: Admin Access Request &gt;&gt; <span className="text-orange-500 font-bold">MAN MODE TRIGGERED</span></span>
+                </div>
+                <div className="flex items-center gap-4 pl-28 border-l border-dashed border-gray-700 ml-6">
+                  <span className="text-gray-400">↳ Alert dispatched to #security-ops</span>
+                </div>
+                <div className="flex items-center gap-4 pl-28 border-l border-dashed border-gray-700 ml-6">
+                  <span className="text-gray-400">↳ Incident #8492 created</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="w-24 text-gray-500">[00:00.45]</span>
+                  <span className="text-green-400">EXEC</span>
+                  <span>Step 3: Welcome Email Sent (Non-blocking)</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="w-24 text-gray-500">[00:00.50]</span>
+                  <span className="text-blue-400">WAIT</span>
+                  <span>Workflow marked &quot;Partially Complete&quot; - Awaiting Auth #8492</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div style={{ marginTop: 'var(--space-16)', textAlign: 'center', padding: 'var(--space-12)', backgroundColor: 'var(--color-surface)', borderRadius: 'var(--border-radius-lg)' }}>
-            <h3 className="heading-3 mb-4">Ready to balance automation with oversight?</h3>
-            <p className="text-secondary mb-8">See how MAN Mode enables safe, fast workflows with human judgment where it matters.</p>
-            <a href="/demo.html" className="btn btn--primary">See MAN Mode in Action</a>
+          {/* CTA */}
+          <div className="text-center p-8 bg-surface border border-border rounded-lg">
+            <h3 className="heading-3 mb-4">Directable. Accountable. Dependable.</h3>
+            <p className="text-secondary mb-8 max-w-2xl mx-auto">
+              MAN Mode is not just a feature; it&#39;s a safety philosophy baked into the core of the APEX OmniHub Orchestrator.
+            </p>
+            <div className="flex justify-center gap-4">
+              <a href="/demo.html" className="btn btn--primary">Simulate MAN Mode Event</a>
+              <a href="/tech-specs.html" className="btn btn--secondary">View Full API Docs</a>
+            </div>
           </div>
+
         </div>
       </Section>
     </Layout>
