@@ -17,12 +17,12 @@ The APEX Orchestrator is a production-grade AI agent orchestration platform impl
 ```
 ┌────────────────────────────────────────────────────────────────┐
 │ 1. USER REQUEST                                                │
-│    "Book flight to Paris tomorrow + email confirmation"       │
+│    "Book flight to Paris tomorrow + email confirmation"        │
 └────────────────────┬───────────────────────────────────────────┘
                      │
                      ▼
 ┌────────────────────────────────────────────────────────────────┐
-│ 2. TYPESCRIPT EDGE FUNCTION (Supabase)                        │
+│ 2. TYPESCRIPT EDGE FUNCTION (Supabase)                         │
 │    - OmniLink Agent receives request                           │
 │    - Creates EventEnvelope with trace context                  │
 │    - POSTs to Python orchestrator                              │
@@ -30,67 +30,67 @@ The APEX Orchestrator is a production-grade AI agent orchestration platform impl
                      │
                      ▼
 ┌────────────────────────────────────────────────────────────────┐
-│ 3. TEMPORAL WORKFLOW (Event Sourcing)                         │
-│    ┌────────────────────────────────────────────────────────┐ │
-│    │ GoalReceived Event                                     │ │
-│    └────────────────────────────────────────────────────────┘ │
-│    ┌────────────────────────────────────────────────────────┐ │
-│    │ Semantic Cache Lookup (Redis VSS)                     │ │
-│    │ - Extract template: "Book flight to {LOC} {DATE}"     │ │
-│    │ - Embed template (384d vector)                        │ │
-│    │ - Vector similarity search (cosine)                   │ │
-│    │ - If similarity >= 0.85 → CACHE HIT                   │ │
-│    └────────────────────────────────────────────────────────┘ │
-│    ┌────────────────────────────────────────────────────────┐ │
-│    │ Plan Generation                                        │ │
-│    │ [Cache Hit]: Inject params into cached plan           │ │
-│    │ [Cache Miss]: Call LLM (instructor + litellm)         │ │
-│    └────────────────────────────────────────────────────────┘ │
-│    ┌────────────────────────────────────────────────────────┐ │
-│    │ PlanGenerated Event                                    │ │
-│    │ steps: [                                               │ │
-│    │   {id: "s1", tool: "search_flights", ...},            │ │
-│    │   {id: "s2", tool: "book_flight", ...},               │ │
-│    │   {id: "s3", tool: "send_email", ...}                 │ │
-│    │ ]                                                      │ │
-│    └────────────────────────────────────────────────────────┘ │
+│ 3. TEMPORAL WORKFLOW (Event Sourcing)                          │
+│    ┌────────────────────────────────────────────────────────┐  │
+│    │ GoalReceived Event                                     │  │
+│    └────────────────────────────────────────────────────────┘  │
+│    ┌───────────────────────────────────────────────────────┐   │
+│    │ Semantic Cache Lookup (Redis VSS)                     │   │
+│    │ - Extract template: "Book flight to {LOC} {DATE}"     │   │
+│    │ - Embed template (384d vector)                        │   │
+│    │ - Vector similarity search (cosine)                   │   │
+│    │ - If similarity >= 0.85 → CACHE HIT                   │   │
+│    └───────────────────────────────────────────────────────┘   │
+│    ┌────────────────────────────────────────────────────────┐  │
+│    │ Plan Generation                                        │  │
+│    │ [Cache Hit]: Inject params into cached plan            │  │
+│    │ [Cache Miss]: Call LLM (instructor + litellm)          │  │
+│    └────────────────────────────────────────────────────────┘  │
+│    ┌────────────────────────────────────────────────────────┐  │ 
+│    │ PlanGenerated Event                                    │  │
+│    │ steps: [                                               │  │
+│    │   {id: "s1", tool: "search_flights", ...},             │  │
+│    │   {id: "s2", tool: "book_flight", ...},                │  │
+│    │   {id: "s3", tool: "send_email", ...}                  │  │
+│    │ ]                                                      │  │
+│    └────────────────────────────────────────────────────────┘  │
 └────────────────────┬───────────────────────────────────────────┘
                      │
                      ▼
 ┌────────────────────────────────────────────────────────────────┐
-│ 4. SAGA-BASED STEP EXECUTION                                  │
-│    ┌─────────────────────────────────────────────────────────┐│
-│    │ Step 1: search_flights                                  ││
-│    │ ✓ Success → No compensation needed                     ││
-│    └─────────────────────────────────────────────────────────┘│
-│    ┌─────────────────────────────────────────────────────────┐│
-│    │ Step 2: book_flight                                     ││
-│    │ ✓ Success → Register compensation: cancel_flight       ││
-│    │ Saga Stack: [cancel_flight]                            ││
-│    └─────────────────────────────────────────────────────────┘│
-│    ┌─────────────────────────────────────────────────────────┐│
-│    │ Step 3: send_email                                      ││
-│    │ ✗ FAILURE (network timeout)                            ││
-│    │ → Trigger Saga Rollback                                ││
-│    └─────────────────────────────────────────────────────────┘│
-│    ┌─────────────────────────────────────────────────────────┐│
-│    │ Saga Rollback (LIFO order)                             ││
-│    │ 1. Execute: cancel_flight (compensation for step 2)    ││
-│    │ ✓ Flight booking cancelled                             ││
-│    └─────────────────────────────────────────────────────────┘│
-│    ┌─────────────────────────────────────────────────────────┐│
-│    │ WorkflowFailed Event                                    ││
-│    │ compensation_executed: true                             ││
-│    │ compensation_results: [{step_id: "s2", success: true}] ││
-│    └─────────────────────────────────────────────────────────┘│
+│ 4. SAGA-BASED STEP EXECUTION                                   │
+│    ┌─────────────────────────────────────────────────────────┐ │
+│    │ Step 1: search_flights                                  │ │
+│    │ ✓Success → No compensation needed                       │ │
+│    └─────────────────────────────────────────────────────────┘ │
+│    ┌─────────────────────────────────────────────────────────┐ │
+│    │ Step 2: book_flight                                     │ │
+│    │ ✓ Success → Register compensation: cancel_flight        │ │
+│    │ Saga Stack: [cancel_flight]                             │ │
+│    └─────────────────────────────────────────────────────────┘ │
+│    ┌─────────────────────────────────────────────────────────┐ │
+│    │ Step 3: send_email                                      │ │
+│    │ ✗ FAILURE (network timeout)                             │ │
+│    │ → Trigger Saga Rollback                                 │ │
+│    └─────────────────────────────────────────────────────────┘ │
+│    ┌─────────────────────────────────────────────────────────┐ │
+│    │ Saga Rollback (LIFO order)                              │ │
+│    │ 1. Execute: cancel_flight (compensation for step 2)     │ │
+│    │ ✓ Flight booking cancelled                              │ │
+│    └─────────────────────────────────────────────────────────┘ │
+│    ┌─────────────────────────────────────────────────────────┐ │
+│    │ WorkflowFailed Event                                    │ │
+│    │ compensation_executed: true                             │ │
+│    │ compensation_results: [{step_id: "s2", success: true}]  │ │
+│    └─────────────────────────────────────────────────────────┘ │
 └────────────────────┬───────────────────────────────────────────┘
                      │
                      ▼
 ┌────────────────────────────────────────────────────────────────┐
-│ 5. STATE PERSISTENCE                                          │
-│    - Supabase: workflow_instances table (workflow state)      │
-│    - Temporal: Event history (for replay)                     │
-│    - Redis: Semantic cache (plan templates)                   │
+│ 5. STATE PERSISTENCE                                           │
+│    - Supabase: workflow_instances table (workflow state)       │
+│    - Temporal: Event history (for replay)                      │
+│    - Redis: Semantic cache (plan templates)                    │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -373,30 +373,30 @@ class EventEnvelope(BaseModel):
 
 ```
 ┌───────────── Region: us-east-1 ────────────────┐
-│ ┌──────────────┐  ┌──────────────┐           │
-│ │ Temporal     │  │ Redis        │           │
-│ │ Cluster (3x) │  │ Enterprise   │           │
-│ └──────────────┘  │ Active-Active│           │
-│ ┌──────────────────────────────┐ │           │
-│ │ Orchestrator Workers (10x)   │ │           │
-│ │ - Auto-scaling (CPU > 70%)   │ │           │
-│ │ - Load balanced              │ │           │
-│ └──────────────────────────────┘ │           │
+│ ┌──────────────┐  ┌──────────────┐             │
+│ │ Temporal     │  │ Redis        │             │
+│ │ Cluster (3x) │  │ Enterprise   │             │
+│ └──────────────┘  │ Active-Active│             │
+│ ┌──────────────────────────────┐ │             │
+│ │ Orchestrator Workers (10x)   │ │             │
+│ │ - Auto-scaling (CPU > 70%)   │ │             │
+│ │ - Load balanced              │ │             │
+│ └──────────────────────────────┘ │             │
 └────────────────────┬───────────────┘           │
-                     │                            │
+                     │                           │
           ┌──────────┴────────────┐              │
           │ Global Load Balancer  │              │
           └──────────┬────────────┘              │
-                     │                            │
+                     │                           │
 ┌───────────── Region: eu-west-1 ────────────────┤
-│ ┌──────────────┐  ┌──────────────┐           │
-│ │ Temporal     │  │ Redis        │           │
-│ │ Cluster (3x) │  │ Enterprise   │           │
-│ └──────────────┘  │ Active-Active│           │
-│ ┌──────────────────────────────┐ │           │
-│ │ Orchestrator Workers (10x)   │ │           │
-│ └──────────────────────────────┘ │           │
-└─────────────────────────────────────────────────┘
+│ ┌──────────────┐  ┌──────────────┐             │
+│ │ Temporal     │  │ Redis        │             │
+│ │ Cluster (3x) │  │ Enterprise   │             │
+│ └──────────────┘  │ Active-Active│             │
+│ ┌──────────────────────────────┐ │             │
+│ │ Orchestrator Workers (10x)   │ │             │
+│ └──────────────────────────────┘ │             │
+└────────────────────────────────────────────────┘
 ```
 
 ## Security Considerations
