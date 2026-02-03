@@ -21,9 +21,9 @@ _Directable • Accountable • Dependable_
 
 ## Overview
 
-APEX OmniHub is the enterprise **AI orchestration control plane** for **governed execution** across modern stacks—AI apps, legacy enterprise systems, and Web3 infrastructure. Think "control tower": one place to connect, translate, enforce policy, and produce an audit trail you can defend.
+APEX OmniHub is the enterprise **AI orchestration control plane** for **governed execution** across ALL modern stacks, AI apps, legacy enterprise systems, and Web3 infrastructure. Think "control tower": one place to connect, translate, enforce policy, and produce an audit trail you can defend.
 
-> OmniHub's job is simple: **translate intent into deterministic execution**—without lock-in, without chaos, and without silent failure.
+> OmniHub's job is simple: **translate intent into deterministic execution**, without lock-in, without chaos, and without silent failure.
 
 ---
 
