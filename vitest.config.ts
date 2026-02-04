@@ -1,10 +1,14 @@
 import { defineConfig } from 'vitest/config';
 import path from 'node:path';
 
+// Detect CI environment to prevent coverage race condition (PR#413)
+const isCI = process.env.CI === 'true' || !!process.env.GITHUB_ACTIONS;
+
 export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    setupFiles: ['tests/setup/vitest.setup.ts'],
     include: [
       'tests/**/*.spec.ts',
       'tests/**/*.spec.tsx',
@@ -16,28 +20,43 @@ export default defineConfig({
       'apex-resilience/tests/**/*.test.ts'
     ],
     exclude: [
-      // Playwright E2E tests (run separately with `npm run test:e2e`)
-      'tests/e2e-playwright/**',
+      // Explicitly ignore Playwright
       '**/playwright/**',
-      'e2e/**',
-      'node_modules/**',
-      // Skip Hardhat contract tests (run with `npm run hardhat:test`)
+      '**/e2e-playwright/**',
+      'tests/e2e-playwright/**',
+      'tests/worldwide-wildcard/playwright/**',
+      
+      // Explicitly ignore Hardhat
+      '**/contracts/**',
       'tests/contracts/**',
+
+      'node_modules/**',
+      'dist/**',
+      '.idea/**',
+      '.git/**',
+      '.cache/**',
+      
       // Skip integration tests in CI (require real Supabase infrastructure)
       ...(process.env.CI ? ['tests/integration/**'] : [])
     ],
-    setupFiles: ['tests/setup.ts'],
     // Fix coverage race condition in CI
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
     coverage: {
+      enabled: !isCI, // Disable coverage in CI to prevent ENOENT on coverage/.tmp (PR#413)
       provider: 'v8',
       reportsDirectory: './coverage',
       clean: true,
+      exclude: [
+        'apex-resilience/**',
+        '**/iron-law.spec.ts',
+        '**/contracts/**',
+        'tests/contracts/**',
+        'node_modules/**',
+        'dist/**',
+        '.idea/**',
+        '.git/**',
+        '.cache/**'
+      ]
     },
   },
   resolve: {
@@ -46,4 +65,3 @@ export default defineConfig({
     },
   },
 });
-
