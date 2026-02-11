@@ -47,17 +47,20 @@ function App() {
       <Route path="/ai-automation" element={<AiAutomationPage />} />
       <Route path="/fortress" element={<FortressPage />} />
       <Route path="/maestro" element={<MaestroPage />} />
-      <Route path="/man-mode" element={<ManModePage />} />
       <Route path="/omniport" element={<OmniPortPage />} />
       <Route path="/orchestrator" element={<OrchestratorPage />} />
       <Route path="/smart-integrations" element={<SmartIntegrationsPage />} />
       <Route path="/tri-force" element={<TriForcePage />} />
 
-      {/* Fallback for .html URLs if any hardcoded links remain */}
-      {/* Note: This assumes links like /demo.html are requested. React Router handles path matching. */}
-      {/* However, if the server doesn't rewrite .html requests to index.html, this won't be hit. */}
-      {/* Vite development server handles this usually if configured, but production might not. */}
-      {/* For now, we assume clean URLs are used. */}
+      {/* Man Mode - Protected with Man Mode gating (Feature branch integration) */}
+      <Route
+        path="/man-mode"
+        element={
+          <ProtectedRoute requireManMode>
+            <ManModePage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

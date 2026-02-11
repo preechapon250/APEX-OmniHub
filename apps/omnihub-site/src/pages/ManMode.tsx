@@ -165,7 +165,7 @@ export function ManModePage() {
               MAN Mode is not just a feature; it&#39;s a safety philosophy baked into the core of the APEX OmniHub Orchestrator.
             </p>
             <div className="flex justify-center gap-4">
-              <a href="/demo.html" className="btn btn--primary">Simulate MAN Mode Event</a>
+              <a href="/omnidash/approvals" className="btn btn--primary">Launch Console</a>
               <a href="/tech-specs.html" className="btn btn--secondary">View Full API Docs</a>
             </div>
           </div>
