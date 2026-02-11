@@ -7,7 +7,6 @@ import { BaseConnector } from './base';
 import { ConnectorConfig, SessionToken, RawEvent, NormalizationContext } from '../types/connector';
 import { CanonicalEvent, EventType } from '../types/canonical';
 import { generateCorrelationId } from '../utils/correlation';
-import { authSessionStorage } from '../storage/auth-session-storage';
 
 interface MetaTokenResponse {
   access_token: string;
@@ -127,7 +126,7 @@ export class MetaBusinessConnector extends BaseConnector {
 
   async fetchDelta(_connectorId: string, _since: Date): Promise<RawEvent[]> {
     // Get stored session to retrieve access token
-    // TODO: Get token from storage
+    // TODO: [Blocker] Inject accessToken via executionContext (See Task #Auth-001)
     const accessToken = 'placeholder_token'; // TODO: Retrieve from storage
 
     try {
