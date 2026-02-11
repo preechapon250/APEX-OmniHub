@@ -75,7 +75,7 @@ describe('OmniConnect Basic Functionality', () => {
     expect(isEnabled).toBe(true);
   });
 
-  it('should return available connectors', () => {
+  it('should return available connectors', async () => {
     const config = {
       tenantId: 'test-tenant',
       userId: 'test-user',
@@ -83,12 +83,12 @@ describe('OmniConnect Basic Functionality', () => {
     };
 
     const omniconnect = new OmniConnect(config);
-    const connectors = omniconnect.getAvailableConnectors();
+    const connectors = await omniconnect.getAvailableConnectors();
     expect(connectors).toContain('meta_business');
     expect(connectors).toContain('linkedin');
   });
 
-  it('should return demo connectors in demo mode', () => {
+  it('should return demo connectors in demo mode', async () => {
     const config = {
       tenantId: 'test-tenant',
       userId: 'test-user',
@@ -97,7 +97,7 @@ describe('OmniConnect Basic Functionality', () => {
     };
 
     const omniconnect = new OmniConnect(config);
-    const connectors = omniconnect.getAvailableConnectors();
+    const connectors = await omniconnect.getAvailableConnectors();
     expect(connectors).toContain('meta_business_demo');
     expect(connectors).toContain('linkedin_demo');
   });
