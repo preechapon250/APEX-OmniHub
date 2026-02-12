@@ -14,7 +14,7 @@ type Task = {
   created_at: string;
 };
 
-const RiskBadge = ({ riskClass }: { riskClass: string }) => {
+const RiskBadge = ({ riskClass }: Readonly<{ riskClass: string }>) => {
   const styles: Record<string, string> = {
     A: "bg-red-950 text-red-400 border-red-800",
     B: "bg-orange-950 text-orange-400 border-orange-800",

@@ -68,7 +68,7 @@ class RiskTriageResult(BaseModel):
         ..., description="Marketing Tier: A=Critical, D=Safe"
     )
     reasoning: str = Field(..., description="Classification rationale")
-    confidence_score: float = Field(..., ge=0.0, le=1.0, description="Confidence score")
+    confidence_score: float = Field(..., ge=0, le=1, description="Confidence score")
     is_demo: bool = Field(default=False, description="Demo flag to bypass DB")
     requires_approval: bool = Field(..., description="Human approval required")
     risk_factors: list[str] = Field(default_factory=list, description="Contributing risk factors")
