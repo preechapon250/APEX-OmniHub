@@ -65,10 +65,10 @@ class RiskTriageResult(BaseModel):
 
     lane: ManLane = Field(..., description="Action: RED (Block), YELLOW (Review), GREEN (Pass)")
     risk_class: Literal["A", "B", "C", "D"] = Field(
-        ..., description="Marketing Tier: A=Critical, D=Safe"
+        default="D", description="Marketing Tier: A=Critical, D=Safe"
     )
-    reasoning: str = Field(..., description="Classification rationale")
-    confidence_score: float = Field(..., ge=0, le=1, description="Confidence score")
+    reasoning: str = Field(default="", description="Classification rationale")
+    confidence_score: float = Field(default=1.0, ge=0, le=1, description="Confidence score")
     is_demo: bool = Field(default=False, description="Demo flag to bypass DB")
     requires_approval: bool = Field(..., description="Human approval required")
     risk_factors: list[str] = Field(default_factory=list, description="Contributing risk factors")
