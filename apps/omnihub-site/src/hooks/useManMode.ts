@@ -6,6 +6,7 @@ export const useManMode = () => {
     // In production, check user role/claims here
     const isMan = localStorage.getItem('apex_man_mode') === 'true';
     setManModeActive(isMan);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return { manModeActive };
 };
