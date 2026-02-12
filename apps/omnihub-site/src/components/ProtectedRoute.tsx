@@ -4,8 +4,8 @@ import { supabase } from '@/lib/supabase';
 import { useManMode } from '@/hooks/useManMode';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requireManMode?: boolean;
+  readonly children: React.ReactNode;
+  readonly requireManMode?: boolean;
 }
 
 export function ProtectedRoute({ children, requireManMode = false }: ProtectedRouteProps) {

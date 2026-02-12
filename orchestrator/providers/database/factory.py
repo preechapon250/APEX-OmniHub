@@ -1,5 +1,5 @@
-from ...config import settings
-from ...infrastructure.tidb_persistence import TiDBVectorPersistence
+from config import settings
+from infrastructure.tidb_persistence import TiDBVectorPersistence
 from .supabase_provider import SupabaseDatabaseProvider
 
 
