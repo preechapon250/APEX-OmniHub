@@ -35,15 +35,6 @@ class Settings(BaseSettings):
     supabase_service_role_key: str = Field(..., description="Supabase service role key")
     supabase_db_url: str = Field(..., description="Direct Supabase PostgreSQL URL")
 
-    # Database Configuration (Project Sovereign)
-    database_provider: str = Field(
-        default="supabase", description="Database provider: supabase or tidb"
-    )
-    tidb_host: str | None = Field(default=None, description="TiDB host")
-    tidb_port: int | None = Field(default=4000, description="TiDB port")
-    tidb_user: str | None = Field(default=None, description="TiDB user")
-    tidb_password: str | None = Field(default=None, description="TiDB password")
-
     # LLM Configuration
     openai_api_key: str = Field(default="", description="OpenAI API key")
     anthropic_api_key: str = Field(default="", description="Anthropic API key")

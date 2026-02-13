@@ -1,5 +1,4 @@
 """MAN Mode (Manual-Authorization-Needed) domain models.
-# Force CI sync
 
 This module defines the core data structures for the human-in-the-loop
 safety system that gates high-risk agent actions.
@@ -58,19 +57,18 @@ class ActionIntent(BaseModel):
 
 
 class RiskTriageResult(BaseModel):
-    """Output from risk policy evaluation.
-
+    """
     MASTER SCHEMA: Aligns Frontend Brochure (Class A-D) with Backend Logic.
     """
-
     lane: ManLane = Field(..., description="Action: RED (Block), YELLOW (Review), GREEN (Pass)")
-    risk_class: Literal["A", "B", "C", "D"] = Field(
-        default="D", description="Marketing Tier: A=Critical, D=Safe"
-    )
-    reasoning: str = Field(default="", description="Classification rationale")
-    confidence_score: float = Field(default=1.0, ge=0, le=1, description="Confidence score")
-    is_demo: bool = Field(default=False, description="Demo flag to bypass DB")
-    requires_approval: bool = Field(..., description="Human approval required")
+    risk_class: Literal["A", "B", "C", "D"] = Field(..., description="Marketing Tier: A=Critical, D=Safe")
+    reasoning: str = Field(...)
+    confidence_score: float = Field(..., ge=0.0, le=1.0)
+    # CRITICAL: Demo flag to bypass DB in presentation mode
+    is_demo: bool = Field(default=False)
+
+    # Optional fields for backward compatibility or future use
+    requires_approval: bool = Field(default=True, description="Human approval required")
     risk_factors: list[str] = Field(default_factory=list, description="Contributing risk factors")
     suggested_timeout_hours: int = Field(default=24, description="Approval timeout in hours")
 

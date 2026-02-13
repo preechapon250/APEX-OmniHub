@@ -1,7 +1,9 @@
 import { Routes, Route } from 'react-router-dom';
 import { HomePage } from '@/pages/Home';
 import { OnboardingWizard } from '@/pages/Launch/OnboardingWizard';
-import { OmniDashPage } from '@/pages/OmniDash';
+import { DashboardOverview } from '@/pages/DashboardOverview';
+import { ApprovalsPage } from '@/pages/OmniDash/Approvals';
+import { OmniDashLayout } from '@/layouts/OmniDashLayout';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 // Legacy/Existing Pages
@@ -27,14 +29,19 @@ function App() {
       {/* Core Application Routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/launch" element={<OnboardingWizard />} />
+
+      {/* OmniDash Console Routes */}
       <Route
         path="/omnidash"
         element={
           <ProtectedRoute>
-            <OmniDashPage />
+            <OmniDashLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route index element={<DashboardOverview />} />
+        <Route path="approvals" element={<ApprovalsPage />} />
+      </Route>
 
       {/* Existing Content Pages - Mapping to clean URLs */}
       <Route path="/login" element={<LoginPage />} />
@@ -47,20 +54,17 @@ function App() {
       <Route path="/ai-automation" element={<AiAutomationPage />} />
       <Route path="/fortress" element={<FortressPage />} />
       <Route path="/maestro" element={<MaestroPage />} />
+      <Route path="/man-mode" element={<ManModePage />} />
       <Route path="/omniport" element={<OmniPortPage />} />
       <Route path="/orchestrator" element={<OrchestratorPage />} />
       <Route path="/smart-integrations" element={<SmartIntegrationsPage />} />
       <Route path="/tri-force" element={<TriForcePage />} />
 
-      {/* Man Mode - Protected with Man Mode gating (Feature branch integration) */}
-      <Route
-        path="/man-mode"
-        element={
-          <ProtectedRoute requireManMode>
-            <ManModePage />
-          </ProtectedRoute>
-        }
-      />
+      {/* Fallback for .html URLs if any hardcoded links remain */}
+      {/* Note: This assumes links like /demo.html are requested. React Router handles path matching. */}
+      {/* However, if the server doesn't rewrite .html requests to index.html, this won't be hit. */}
+      {/* Vite development server handles this usually if configured, but production might not. */}
+      {/* For now, we assume clean URLs are used. */}
     </Routes>
   );
 }

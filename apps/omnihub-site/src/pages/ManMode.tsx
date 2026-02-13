@@ -1,6 +1,26 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Session } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { Layout, Section } from '@/components';
 
 export function ManModePage() {
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <Layout title="MAN Mode">
       <Section>
@@ -165,8 +185,12 @@ export function ManModePage() {
               MAN Mode is not just a feature; it&#39;s a safety philosophy baked into the core of the APEX OmniHub Orchestrator.
             </p>
             <div className="flex justify-center gap-4">
-              <a href="/omnidash/approvals" className="btn btn--primary">Launch Console</a>
-              <a href="/tech-specs.html" className="btn btn--secondary">View Full API Docs</a>
+              {session ? (
+                <Link to="/omnidash/approvals" className="btn btn--primary">Launch Console</Link>
+              ) : (
+                <Link to="/request-access" className="btn btn--primary">Request Access</Link>
+              )}
+              <Link to="/tech-specs" className="btn btn--secondary">View Full API Docs</Link>
             </div>
           </div>
 

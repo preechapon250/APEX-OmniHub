@@ -327,7 +327,7 @@ class TestManPolicyPerformance:
         result1 = policy.triage(intent)
         result2 = policy.triage(intent)
         assert result1.lane == result2.lane
-        assert result1.reasoning == result2.reasoning
+        assert result1.reason == result2.reason
 
 
 class TestEdgeCases:

@@ -156,7 +156,7 @@ class ManPolicy:
         if tool_name in self._blocked_lower:
             return RiskTriageResult(
                 lane=ManLane.BLOCKED,
-                reasoning=f"Tool '{intent.tool_name}' is prohibited",
+                reason=f"Tool '{intent.tool_name}' is prohibited",
                 requires_approval=False,  # Never execute, no point in approval
                 risk_factors=["blocked_tool"],
             )
@@ -166,7 +166,7 @@ class ManPolicy:
             risk_factors.append("sensitive_tool")
             return RiskTriageResult(
                 lane=ManLane.RED,
-                reasoning=f"Tool '{intent.tool_name}' requires human approval",
+                reason=f"Tool '{intent.tool_name}' requires human approval",
                 requires_approval=True,
                 risk_factors=risk_factors,
                 suggested_timeout_hours=24,
@@ -177,7 +177,7 @@ class ManPolicy:
             risk_factors.append("marked_irreversible")
             return RiskTriageResult(
                 lane=ManLane.RED,
-                reasoning="Action is marked as irreversible",
+                reason="Action is marked as irreversible",
                 requires_approval=True,
                 risk_factors=risk_factors,
                 suggested_timeout_hours=24,
@@ -191,7 +191,7 @@ class ManPolicy:
             # Multiple high-risk params → RED
             return RiskTriageResult(
                 lane=ManLane.RED,
-                reasoning="Multiple high-risk parameters detected",
+                reason="Multiple high-risk parameters detected",
                 requires_approval=True,
                 risk_factors=risk_factors,
                 suggested_timeout_hours=24,
@@ -200,7 +200,7 @@ class ManPolicy:
             # Single high-risk param → YELLOW (logged but auto-execute)
             return RiskTriageResult(
                 lane=ManLane.YELLOW,
-                reasoning=f"High-risk parameter detected: {param_risk[0]}",
+                reason=f"High-risk parameter detected: {param_risk[0]}",
                 requires_approval=False,
                 risk_factors=risk_factors,
             )
@@ -209,7 +209,7 @@ class ManPolicy:
         if tool_name in self._safe_lower:
             return RiskTriageResult(
                 lane=ManLane.GREEN,
-                reasoning="Tool is classified as safe",
+                reason="Tool is classified as safe",
                 requires_approval=False,
                 risk_factors=[],
             )
@@ -217,7 +217,7 @@ class ManPolicy:
         # 6. Default: YELLOW (unknown tools - log but execute)
         return RiskTriageResult(
             lane=ManLane.YELLOW,
-            reasoning="Unknown tool - executing with audit logging",
+            reason="Unknown tool - executing with audit logging",
             requires_approval=False,
             risk_factors=["unknown_tool"],
         )

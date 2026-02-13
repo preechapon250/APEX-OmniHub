@@ -58,14 +58,7 @@
     "apex:demo": "tsx apex-resilience/scripts/demo-verify.ts",
     "apex:deploy": "./apex-resilience/scripts/deploy.sh",
     "apex:test": "vitest run apex-resilience/tests/",
-    "audit:features": "tsx scripts/audit-features.ts",
-    "validate:patent-claims": "tsx patent-validation/run-all.ts",
-    "validate:claim-1": "vitest run --config patent-validation/vitest.config.patent.ts patent-validation/claims/01-triforce-protocol/",
-    "validate:claim-2": "vitest run --config patent-validation/vitest.config.patent.ts patent-validation/claims/02-trinity-integration/",
-    "validate:claim-3": "vitest run --config patent-validation/vitest.config.patent.ts patent-validation/claims/03-cyber-physical-security/",
-    "validate:claim-4": "vitest run --config patent-validation/vitest.config.patent.ts patent-validation/claims/04-temporal-workflows/",
-    "validate:claim-5": "vitest run --config patent-validation/vitest.config.patent.ts patent-validation/claims/05-deterministic-execution/",
-    "validate:generate-legal-package": "tsx patent-validation/generate-legal-package.ts"
+    "audit:features": "tsx scripts/audit-features.ts"
   },
   "dependencies": {
     "@capacitor/android": "^6.2.1",
