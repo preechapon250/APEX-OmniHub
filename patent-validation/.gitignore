@@ -1,0 +1,12 @@
+# Patent Validation — Generated Artifacts
+# These are regenerated on each test run
+
+# Evidence results (regenerated per run)
+claims/*/results-*.json
+claims/*/metrics.json
+
+# Legal package output
+legal-package/
+
+# Validation summary
+validation-summary.json
