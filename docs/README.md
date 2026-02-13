@@ -6,18 +6,21 @@
 
 ## Quick Navigation
 
-| Category                              | Description                                |
-| ------------------------------------- | ------------------------------------------ |
-| [Platform Modules](#platform-modules) | Core Omni-\* module documentation          |
-| [Architecture](#architecture)         | System design and technical specifications |
-| [Project Status](#project-status)     | Current status and readiness reports       |
-| [Infrastructure](#infrastructure)     | Deployment, cloud, and DevOps              |
-| [Operations](#operations)             | Runbooks and operational procedures        |
-| [Security](#security)                 | Security controls and policies             |
-| [Compliance](#compliance)             | SOC2, GDPR, audit readiness                |
-| [Knowledge](#knowledge)               | Developer guides and manifestos            |
-| [Testing](#testing)                   | Test results and simulation                |
-| [Audits](#audits)                     | Audit reports and remediation              |
+| Category                                          | Description                                |
+| ------------------------------------------------- | ------------------------------------------ |
+| [Platform Modules](#platform-modules)             | Core Omni-\* module documentation          |
+| [Architecture](#architecture)                     | System design and technical specifications |
+| [Project Status](#project-status)                 | Current status and readiness reports       |
+| [Infrastructure](#infrastructure)                 | Deployment, cloud, and DevOps              |
+| [Operations](#operations)                         | Runbooks and operational procedures        |
+| [Security](#security)                             | Security controls and policies             |
+| [Compliance](#compliance)                         | SOC2, GDPR, audit readiness                |
+| [Knowledge](#knowledge)                           | Developer guides and onboarding            |
+| [Quality & Scalability](#quality--scalability)    | QA framework and scaling architecture      |
+| [API & Extensibility](#api--extensibility)        | API docs and plugin architecture           |
+| [Institutional Readiness](#institutional-readiness) | M&A due diligence and valuation          |
+| [Testing](#testing)                               | Test results and simulation                |
+| [Audits](#audits)                                 | Audit reports and remediation              |
 
 ---
 
@@ -103,6 +106,7 @@ Operational runbooks and procedures:
 
 | Document                                              | Description               |
 | ----------------------------------------------------- | ------------------------- |
+| [Operational Excellence](ops/OPERATIONAL_EXCELLENCE.md) | Enterprise operations framework |
 | [Operations Runbook](ops/OPS_RUNBOOK.md)              | Master ops runbook (v2.0) |
 | [Ops Audit](ops/OPS_AUDIT.md)                         | Operations audit          |
 | [Incident Response](ops/INCIDENT_RESPONSE.md)         | Incident handling         |
@@ -124,6 +128,7 @@ Security controls, policies, and hardening:
 
 | Document                                                        | Description            |
 | --------------------------------------------------------------- | ---------------------- |
+| [Security Hardening Checklist](security/SECURITY_HARDENING_CHECKLIST.md) | Enterprise security hardening |
 | [Secrets Manager Setup](security/SECRETS_MANAGER_SETUP.md)      | Secrets management     |
 | [Secrets Inventory](security/SECRETS_INVENTORY_AND_ROTATION.md) | Secret rotation        |
 | [Secret Scanning](security/SECRET_SCANNING.md)                  | Scanning policies      |
@@ -157,8 +162,42 @@ Developer resources and engineering principles:
 
 | Document                                           | Description              |
 | -------------------------------------------------- | ------------------------ |
+| [Developer Onboarding](onboarding/DEVELOPER_ONBOARDING.md) | 3-day onboarding guide |
+| [System Knowledge Base](knowledge/SYSTEM_KNOWLEDGE_BASE.md) | Critical system knowledge |
 | [OmniDev Manifesto](knowledge/OMNIDEV_MANIFESTO.md)| Engineering principles   |
-| [System Knowledge Base](knowledge/SYSTEM_KNOWLEDGE_BASE.md) | General knowledge |
+
+---
+
+## Quality & Scalability
+
+Enterprise quality assurance and scalability architecture:
+
+| Document                                                    | Description                        |
+| ----------------------------------------------------------- | ---------------------------------- |
+| [Quality Assurance Framework](quality/QUALITY_ASSURANCE_FRAMEWORK.md) | Multi-layer quality gates |
+| [Scalability Architecture](scalability/SCALABILITY_ARCHITECTURE.md)   | 100K+ user scalability |
+
+---
+
+## API & Extensibility
+
+API documentation and plugin architecture:
+
+| Document                                                    | Description                        |
+| ----------------------------------------------------------- | ---------------------------------- |
+| [API Extension Guide](api/API_EXTENSION_GUIDE.md)           | REST/WebSocket API documentation   |
+| [Plugin Architecture](extensibility/PLUGIN_ARCHITECTURE.md)  | Secure plugin system               |
+
+---
+
+## Institutional Readiness
+
+Machine-readable compliance and valuation data:
+
+| Document                                                    | Description                        |
+| ----------------------------------------------------------- | ---------------------------------- |
+| [Institutional Readiness JSON](valuation/INSTITUTIONAL_READINESS.json) | M&A due diligence data |
+| [Platform Valuation Brief](valuation/PLATFORM_VALUATION_BRIEF.md)      | Valuation analysis     |
 
 ---
 
@@ -231,5 +270,5 @@ docs/
 
 ---
 
-**Last Updated:** February 8, 2026
+**Last Updated:** February 13, 2026
 **Release:** v1.0.0
