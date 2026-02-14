@@ -107,7 +107,7 @@ export function FortressPage() {
             <p className="text-secondary mb-8">
               Learn more about our security practices and compliance certifications.
             </p>
-            <a href="/tech-specs.html#security-posture" className="btn btn--primary">
+            <a href="/tech-specs#security-posture" className="btn btn--primary">
               Security Documentation
             </a>
           </div>

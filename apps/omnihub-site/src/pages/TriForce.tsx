@@ -112,7 +112,7 @@ export function TriForcePage() {
             title="Ready to get started?"
             description="Learn more about building with the Tri-Force Protocol in our technical documentation."
             buttonText="View Technical Specs"
-            buttonHref="/tech-specs.html"
+            buttonHref="/tech-specs"
           />
         </div>
       </Section>

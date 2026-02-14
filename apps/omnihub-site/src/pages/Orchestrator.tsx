@@ -88,7 +88,7 @@ export function OrchestratorPage() {
             title="See the Orchestrator in action"
             description="Watch how the Orchestrator coordinates complex multi-system workflows with ease."
             buttonText="Watch Demo"
-            buttonHref="/demo.html"
+            buttonHref="/demo"
           />
         </div>
       </Section>

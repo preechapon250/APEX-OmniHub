@@ -178,7 +178,7 @@ export function LoginPage() {
 
           <p className="text-muted mt-8" style={{ fontSize: 'var(--font-size-sm)' }}>
             Don&apos;t have an account?{' '}
-            <a href="/request-access.html" style={{ color: 'var(--color-accent)' }}>
+            <a href="/request-access" style={{ color: 'var(--color-accent)' }}>
               Request Access
             </a>
           </p>
