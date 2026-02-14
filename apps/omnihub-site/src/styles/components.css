@@ -482,6 +482,34 @@
   filter: drop-shadow(0 0 8px rgba(196, 87, 28, 0.5)) drop-shadow(0 0 16px rgba(196, 87, 28, 0.3));
 }
 
+@media (max-width: 768px) {
+  /* Aggressive Mobile Logo Reduction */
+  .nav__inner {
+    justify-content: space-between !important;
+  }
+
+  .nav__left {
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 50%; /* Strictly limit logo width */
+  }
+
+  .nav__logo {
+    max-width: 100%;
+    gap: var(--space-2); /* Tighter gap */
+  }
+
+  .nav__logo-badge {
+    height: 24px; /* Reduced from 28px */
+  }
+
+  .nav__logo-wordmark {
+    height: 20px; /* Drastically reduced from 24px */
+    max-width: 100%;
+    object-fit: contain;
+  }
+}
+
 .nav__links {
   display: flex;
   align-items: center;
@@ -1045,19 +1073,46 @@
 }
 
 @media (max-width: 768px) {
-  .hero-visual {
-    max-width: 450px;
+  /* Creative Hero: Watermark Visual */
+  .hero__visual {
+    position: absolute;
+    inset: 0;
+    z-index: 0; /* Behind content */
+    opacity: 0.4; /* Increased visibility (was 0.15) */
+    pointer-events: none;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    mix-blend-mode: screen; /* Better blending with dark background */
   }
+
+  .hero-visual {
+    width: 85%;
+    max-width: 450px;
+    filter: contrast(1.2) brightness(1.1); /* Visible, stylised */
+    transform: translateY(-10%); /* Shift up slightly */
+  }
+
+  /* Content floats above watermark */
   .hero__grid {
     grid-template-columns: 1fr;
     text-align: center;
+    display: block; /* Ensure grid doesn't reserve space for absolute item */
   }
+  
   .hero__content {
+    position: relative;
+    z-index: 2; /* Explicitly above visual */
     text-align: center;
+    padding-top: var(--space-8);
   }
+  
   .hero__actions {
     justify-content: center;
   }
+  
   .hero__description {
     margin-left: auto;
     margin-right: auto;
