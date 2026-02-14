@@ -47,7 +47,7 @@ export const advancedAnalyticsData = createPageData(
   ],
   [createUseCase('Executive Performance Dashboards', 'Consolidate KPIs from sales, operations, finance, and customer success into executive-ready dashboards with real-time updates.'), createUseCase('Workflow Performance Optimization', 'Analyze workflow execution patterns, identify bottlenecks, and receive AI-driven recommendations for optimization.'), createUseCase('Customer Journey Analytics', 'Track customer interactions across all touchpoints to understand behavior patterns, improve experiences, and increase retention.')],
   [createSpec('Data Processing', 'Up to 1 million events/second for analytics'), createSpec('Query Performance', 'Sub-second query response on datasets up to 10TB'), createSpec('Dashboard Refresh', 'Real-time updates with <100ms latency'), createSpec('Data Retention', 'Configurable retention from 30 days to unlimited'), createSpec('Visualization Types', 'Charts, graphs, maps, heatmaps, custom widgets'), createSpec('Export Formats', 'CSV, Excel, PDF, JSON, API access')],
-  createCTA('Ready to unlock insights?', 'Discover how Advanced Analytics can transform your data into strategic advantages.', 'Schedule a Demo', '/demo.html')
+  createCTA('Ready to unlock insights?', 'Discover how Advanced Analytics can transform your data into strategic advantages.', 'Schedule a Demo', '/demo')
 );
 
 // Automation page data
@@ -62,7 +62,7 @@ export const aiAutomationData = createPageData(
   ],
   [createUseCase('Customer Onboarding Automation', 'Streamline customer onboarding across CRM, billing, support, and communication platforms with intelligent data routing and validation.'), createUseCase('Incident Response Orchestration', 'Automatically detect, categorize, and route incidents to appropriate teams while coordinating cross-platform notifications and escalations.'), createUseCase('Data Pipeline Management', 'Orchestrate complex data workflows across ETL tools, databases, and analytics platforms with intelligent error recovery and data quality checks.')],
   [createSpec('Workflow Capacity', 'Up to 50,000 concurrent workflows'), createSpec('Decision Latency', 'Sub-50ms AI-driven decision making (p95)'), createSpec('Automation Success Rate', '99.7% successful execution rate'), createSpec('Learning Models', 'Transformer-based NLP, reinforcement learning, pattern recognition'), createSpec('Supported AI Providers', 'OpenAI, Anthropic, Google AI, Azure OpenAI, local models')],
-  createCTA('Ready to automate intelligently?', 'Discover how AI-powered automation can transform your operations.', 'Request a Demo', '/demo.html')
+  createCTA('Ready to automate intelligently?', 'Discover how AI-powered automation can transform your operations.', 'Request a Demo', '/demo')
 );
 
 // Integrations page data
@@ -77,5 +77,5 @@ export const smartIntegrationsData = createPageData(
   ],
   [createUseCase('CRM-ERP Integration', 'Synchronize customer data, orders, and inventory between CRM and ERP systems in real-time, eliminating data silos and manual data entry.'), createUseCase('Marketing Platform Unification', 'Connect email marketing, social media, analytics, and advertising platforms for a unified view of campaign performance and customer engagement.'), createUseCase('Multi-Cloud Data Integration', 'Integrate data across AWS, Azure, and Google Cloud platforms while maintaining data governance and compliance requirements.')],
   [createSpec('Integration Capacity', '10,000+ active integrations per instance'), createSpec('Sync Latency', 'Sub-5 second real-time synchronization (p95)'), createSpec('Data Throughput', 'Up to 100,000 records/second'), createSpec('Supported Platforms', 'Salesforce, SAP, Oracle, Microsoft, Google, AWS, Slack, Jira, 100+ more'), createSpec('Protocol Support', 'REST, GraphQL, gRPC, WebSocket, SOAP, MQTT, AMQP, Kafka, SFTP')],
-  createCTA('Ready to unify your systems?', 'Discover how Smart Integrations can eliminate data silos and boost productivity.', 'View Integration Catalog', '/tech-specs.html')
+  createCTA('Ready to unify your systems?', 'Discover how Smart Integrations can eliminate data silos and boost productivity.', 'View Integration Catalog', '/tech-specs')
 );

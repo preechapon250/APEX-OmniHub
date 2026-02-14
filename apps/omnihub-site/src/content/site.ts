@@ -42,12 +42,10 @@ export const siteConfig = {
   nav: {
     logo: 'APEX OmniHub',
     links: [
-      buildLink('Demo', '/demo.html'),
-      buildLink('Tech Specs', '/tech-specs.html'),
-      buildLink('Request Access', '/request-access.html'),
+      buildLink('Tech Specs', '/tech-specs'),
     ],
-    loginLink: buildLink('Login', '/login.html'),
-    primaryCta: buildLink('Get Started', '/request-access.html'),
+    loginLink: buildLink('Login', '/login'),
+    primaryCta: buildLink('Get Started', '/request-access'),
   },
 
   hero: {
@@ -95,9 +93,9 @@ export const siteConfig = {
   },
 
   ctas: {
-    primary: buildLink('Get Started', '/request-access.html'),
-    secondary: buildLink('Watch Demo', '/demo.html'),
-    link: buildLink('Read Tech Specs', '/tech-specs.html'),
+    primary: buildLink('Get Started', '/request-access'),
+    secondary: buildLink('Watch Demo', '/demo'),
+    link: buildLink('Read Tech Specs', '/tech-specs'),
   },
 
   howItWorks: {
@@ -186,7 +184,7 @@ export const demoConfig = {
   cta: {
     title: 'Ready to get started?',
     description: 'Request access to explore the full platform',
-    button: buildLink('Request Access', '/request-access.html'),
+    button: buildLink('Request Access', '/request-access'),
   },
 } as const;
 

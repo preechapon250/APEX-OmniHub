@@ -166,6 +166,7 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden; /* Prevent horizontal scroll from full-width breakouts */
 }
 
 body {
@@ -176,6 +177,8 @@ body {
   background-color: var(--color-background);
   background-image: var(--grid-texture);
   min-height: 100vh;
+  overflow-x: hidden; /* Double safety for breakout elements */
+  width: 100%;
 }
 
 a {
