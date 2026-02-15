@@ -21,7 +21,7 @@ check_database() {
 
   if [[ "${utilization}" -gt 90 ]]; then
     status="critical"
-  elif [ "${utilization}" -gt 75 ]; then
+  elif [[ "${utilization}" -gt 75 ]]; then
     status="${STATUS_WARNING}"
   fi
 
@@ -47,7 +47,7 @@ check_memory() {
   local used_percent=65
   local threshold=80
 
-  if [ "${used_percent}" -gt "${threshold}" ]; then
+  if [[ "${used_percent}" -gt "${threshold}" ]]; then
     status="${STATUS_WARNING}"
   fi
 
@@ -60,7 +60,7 @@ check_cpu() {
   local used_percent=55
   local threshold=70
 
-  if [ "${used_percent}" -gt "${threshold}" ]; then
+  if [[ "${used_percent}" -gt "${threshold}" ]]; then
     status="${STATUS_WARNING}"
   fi
 
@@ -73,7 +73,7 @@ check_disk() {
   local used_percent=42
   local threshold=75
 
-  if [ "${used_percent}" -gt "${threshold}" ]; then
+  if [[ "${used_percent}" -gt "${threshold}" ]]; then
     status="${STATUS_WARNING}"
   fi
 
@@ -121,9 +121,9 @@ DEGRADED_COUNT=$(echo "${CHECKS[@]}" | grep -o '"status":"degraded"' | wc -l || 
 
 if [[ "${CRITICAL_COUNT}" -gt 0 ]]; then
   OVERALL_STATUS="critical"
-elif [ "${WARNING_COUNT}" -gt 0 ]; then
+elif [[ "${WARNING_COUNT}" -gt 0 ]]; then
   OVERALL_STATUS="${STATUS_WARNING}"
-elif [ "${DEGRADED_COUNT}" -gt 0 ]; then
+elif [[ "${DEGRADED_COUNT}" -gt 0 ]]; then
   OVERALL_STATUS="degraded"
 else
   OVERALL_STATUS="${STATUS_HEALTHY}"
