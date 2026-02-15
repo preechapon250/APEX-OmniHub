@@ -105,9 +105,7 @@ serve(async (req) => {
       }
 
       // 4. Generate Skill (Mocked for deterministic testing)
-      const timestamp = Date.now();
-      const random = Math.floor(Math.random() * 10000);
-      const skillName = `skill_${timestamp}_${random}`;
+      const skillName = `skill_${crypto.randomUUID()}`;
 
       const mockedSkill: SkillDefinition = {
         name: skillName,
