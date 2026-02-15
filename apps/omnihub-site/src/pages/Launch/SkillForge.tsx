@@ -175,13 +175,13 @@ export function SkillForge() {
                 disabled={isCurrentFieldEmpty || loading}
                 className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center gap-2 hover:from-amber-600 hover:to-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? (
-                  <span>Forging Skill...</span>
-                ) : step < 3 ? (
+                {loading && <span>Forging Skill...</span>}
+                {!loading && step < 3 && (
                   <>
                     Next <ArrowRight className="w-5 h-5" />
                   </>
-                ) : (
+                )}
+                {!loading && step >= 3 && (
                   <>
                     Forge Skill <Sparkles className="w-5 h-5" />
                   </>
