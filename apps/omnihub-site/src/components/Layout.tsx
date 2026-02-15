@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { siteConfig } from '@/content/site';
 import { ReferenceOverlay } from './ReferenceOverlay';
+import { useAuth } from '@/lib/useAuth';
 
 type LayoutProps = Readonly<{
   children: ReactNode;
@@ -67,6 +68,8 @@ function ThemeToggle() {
 function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const dashboardUrl = import.meta.env.VITE_DASHBOARD_URL ?? '/omnidash';
 
   // Body scroll lock effect
   useEffect(() => {
@@ -112,11 +115,6 @@ function Nav() {
               className="nav__logo-wordmark"
               width="182"
               height="26"
-              style={{
-                height: '72.96px',
-                width: 'auto',
-                aspectRatio: '1012.5 / 147'
-              }}
             />
           </a>
           <ThemeToggle />
@@ -133,9 +131,15 @@ function Nav() {
         </ul>
 
         <div className="nav__actions">
-          <a href={siteConfig.nav.loginLink.href} className="btn btn--primary btn--sm">
-            {siteConfig.nav.loginLink.label}
-          </a>
+          {isAuthenticated ? (
+            <a href={dashboardUrl} className="btn btn--primary btn--sm">
+              LAUNCH CONSOLE
+            </a>
+          ) : (
+            <a href={siteConfig.nav.loginLink.href} className="btn btn--primary btn--sm">
+              {siteConfig.nav.loginLink.label}
+            </a>
+          )}
 
           <div className="nav__burger" ref={menuRef}>
             <button
@@ -177,15 +181,27 @@ function Nav() {
                     </li>
                   ))}
                   
-                  {/* Additional CTA in Mobile Menu */}
+                  {/* Auth-aware CTA in Mobile Menu */}
                   <li className="nav__mobile-cta-container">
-                     <a
-                      href={siteConfig.nav.loginLink.href}
-                      className="btn btn--primary btn--lg nav__mobile-cta"
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      {siteConfig.nav.loginLink.label}
-                    </a>
+                    {!authLoading && (
+                      isAuthenticated ? (
+                        <a
+                          href={dashboardUrl}
+                          className="btn btn--primary btn--lg nav__mobile-cta"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          LAUNCH CONSOLE
+                        </a>
+                      ) : (
+                        <a
+                          href={siteConfig.nav.loginLink.href}
+                          className="btn btn--primary btn--lg nav__mobile-cta"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          {siteConfig.nav.loginLink.label}
+                        </a>
+                      )
+                    )}
                   </li>
                 </ul>
               </dialog>
@@ -205,7 +221,7 @@ function Footer() {
         <ul className="footer__links">
           {siteConfig.footer.links.map((link) => (
             <li key={link.href}>
-              <a href={link.href + '.html'} className="footer__link">
+              <a href={link.href} className="footer__link">
                 {link.label}
               </a>
             </li>

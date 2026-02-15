@@ -129,7 +129,7 @@ export function MaestroPage() {
           <div style={{ marginTop: 'var(--space-16)', textAlign: 'center', padding: 'var(--space-12)', backgroundColor: 'var(--color-surface)', borderRadius: 'var(--border-radius-lg)' }}>
             <h3 className="heading-3 mb-4">Ready to conduct your workflows?</h3>
             <p className="text-secondary mb-8">See how Maestro transforms business intent into reliable, monitored workflows.</p>
-            <a href="/demo.html" className="btn btn--primary">Watch Maestro Demo</a>
+            <a href="/demo" className="btn btn--primary">Watch Maestro Demo</a>
           </div>
         </div>
       </Section>

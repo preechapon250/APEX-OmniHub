@@ -62,21 +62,21 @@ function HighlightsSection() {
       description:
         'Imagine a platform that anticipates your needs and streamlines your operations effortlessly.',
       icon: <IconAutomation size={22} />,
-      href: '/ai-automation.html#modular-adapters',
+      href: '/ai-automation#modular-adapters',
     },
     {
       title: 'Smart Integrations',
       description:
         'Unify your tools and data into one intelligent system. Say goodbye to silos and productivity bottlenecks.',
       icon: <IconIntegrations size={22} />,
-      href: '/smart-integrations.html#single-port',
+      href: '/smart-integrations#single-port',
     },
     {
       title: 'Advanced Analytics',
       description:
         'Gain a 360° view of your organization. Make data-driven decisions with cutting-edge insights.',
       icon: <IconAnalytics size={22} />,
-      href: '/advanced-analytics.html#receipts-idempotency',
+      href: '/advanced-analytics#receipts-idempotency',
     },
   ];
 
@@ -125,7 +125,7 @@ function TriForceSection() {
           {triForceCards.map((card) => (
             <a
               key={card.id}
-              href={`/tri-force.html#${card.id}`}
+              href={`/tri-force#${card.id}`}
               className="triforce__card"
             >
               <div className="triforce__icon">{card.icon}</div>
@@ -225,7 +225,7 @@ function ManModeSection() {
             <li>User notified for manual review</li>
             <li>Full audit trail maintained</li>
           </ul>
-          <a href="/man-mode.html#man-mode" className="btn btn--secondary mt-8">
+          <a href="/man-mode#man-mode" className="btn btn--secondary mt-8">
             Learn More
           </a>
         </div>
@@ -241,43 +241,44 @@ function CapabilityShowcase() {
       title: 'Tri-Force Protocol',
       description: 'Connect, Translate, Execute',
       icon: <IconTriForceProtocol size={28} />,
-      href: '/tri-force.html#tri-force',
+      href: '/tri-force#tri-force',
     },
     {
       id: 'orchestrator',
       title: 'Orchestrator',
       description: 'Central command for all workflows',
       icon: <IconOrchestrator size={28} />,
-      href: '/orchestrator.html#orchestrator',
+      href: '/orchestrator#orchestrator',
     },
     {
       id: 'fortress',
       title: 'Fortress Protocol',
       description: 'Zero-trust security by default',
       icon: <IconFortressProtocol size={28} />,
-      href: '/fortress.html#fortress',
+      href: '/fortress#fortress',
     },
     {
       id: 'man-mode',
       title: 'MAN Mode',
       description: 'Manual Authorization Needed',
       icon: <IconManMode size={28} />,
-      href: '/man-mode.html#man-mode',
+      href: '/man-mode#man-mode',
     },
 
     {
       id: 'omniport',
       title: 'OmniPort',
-      description: 'Single ingress/egress gateway for simplified security and total observability.',
+      description: 'Unified gateway for secure data flow and visibility.',
       icon: <IconIntegrations size={28} />,
-      href: '/omniport.html#single-port',
+      href: '/omniport#single-port',
     },
     {
       id: 'maestro',
-      title: 'Maestro',
-      description: 'Turns intent into monitored, reversible workflows.',
+      title: 'M.A.E.S.T.R.O.',
+      description: 'Memory Augmented Execution Synchronization To Reproduce Orchestration',
       icon: <IconAutomation size={28} />,
-      href: '/maestro.html#maestro',
+      href: '/maestro#maestro',
+      descStyle: { fontSize: '0.7rem', lineHeight: '1.4' } as React.CSSProperties,
     },
   ];
 
@@ -293,7 +294,7 @@ function CapabilityShowcase() {
             <a key={cap.id} href={cap.href} className="capability-card">
               <div className="capability-card__icon">{cap.icon}</div>
               <h3 className="capability-card__title">{cap.title}</h3>
-              <p className="capability-card__desc">{cap.description}</p>
+              <p className="capability-card__desc" style={cap.descStyle}>{cap.description}</p>
             </a>
           ))}
         </div>
@@ -315,8 +316,8 @@ function CTASection() {
         </p>
         <div className="mt-8">
           <CTAGroup
-            primary={{ label: 'Get Started for Free', href: '/request-access.html' }}
-            secondary={{ label: 'Schedule a Demo', href: '/demo.html' }}
+            primary={{ label: 'Get Started for Free', href: '/request-access' }}
+            secondary={{ label: 'Schedule a Demo', href: '/demo' }}
             centered
           />
         </div>

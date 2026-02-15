@@ -115,7 +115,7 @@ export function OmniPortPage() {
           <div style={{ marginTop: 'var(--space-16)', textAlign: 'center', padding: 'var(--space-12)', backgroundColor: 'var(--color-surface)', borderRadius: 'var(--border-radius-lg)' }}>
             <h3 className="heading-3 mb-4">Simplify your security architecture</h3>
             <p className="text-secondary mb-8">Learn how OmniPort can reduce complexity while increasing visibility and control.</p>
-            <a href="/tech-specs.html#single-port" className="btn btn--primary">Technical Documentation</a>
+            <a href="/tech-specs#single-port" className="btn btn--primary">Technical Documentation</a>
           </div>
         </div>
       </Section>
