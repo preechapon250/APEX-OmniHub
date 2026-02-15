@@ -56,4 +56,9 @@ async function capture(prefix) {
 }
 
 const prefix = process.argv[2] || 'after';
-await capture(prefix);
+try {
+  await capture(prefix);
+} catch (e) {
+  console.error(e);
+  process.exit(1);
+}
