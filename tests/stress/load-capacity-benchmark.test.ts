@@ -68,7 +68,7 @@ describe('Platform Scalability Benchmarks', () => {
 
     const scalingFactor = scaled.throughputRps / baseline.throughputRps;
     expect(scalingFactor).toBeGreaterThan(3.5);
-    expect(scalingFactor).toBeLessThan(6.0);
+    expect(scalingFactor).toBeLessThan(6);
   }, 120000);
 
   it('connection pool prevents resource exhaustion', () => {
